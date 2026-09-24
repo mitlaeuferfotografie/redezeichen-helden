@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Sparkles, Star, Award, ArrowRight, RotateCcw, BookOpen, Crown, Zap, HelpCircle, Lock, Settings, Key, Copy, Check, Highlighter, Radar, MessageCircle, Wand2, Search, Puzzle, Brain, Megaphone, CloudRain, Repeat, PenTool, Trophy, Flame, Footprints, Eraser, Eye } from 'lucide-react';
+import { Sparkles, Star, Award, ArrowRight, RotateCcw, BookOpen, Crown, Zap, HelpCircle, Lock, Settings, Key, Copy, Check, Highlighter, Radar, MessageCircle, Wand2, Search, Puzzle, Brain, Megaphone, CloudRain, Repeat, PenTool, Trophy, Flame, Footprints, Eraser, Eye, Rocket } from 'lucide-react';
 
 // ==========================================
 // CUSTOM CSS FÜR COMIC-THEMA & ANIMATIONEN
@@ -152,7 +152,7 @@ const fehlerData = [
   { s: "„Wo ist mein Heft?“, fragt Luis.", ok: true, why: "Begleitsatz hinten → Komma nach dem “. Das Fragezeichen bleibt stehen." },
   { s: "„Das ist lecker“, sagt Opa.", ok: true, why: "Begleitsatz hinten → Der Punkt der Rede fällt weg, dafür kommt ein Komma." },
   { s: "Papa ruft: „Das Essen ist fertig!“", ok: true, why: "Doppelpunkt nach dem Begleitsatz, Ausrufezeichen vor dem “." },
-  { s: "„Morgen“, sagt Mama, „gehen wir schwimmen.“", ok: true, why: "Begleitsatz in der Mitte → Komma davor und Komma dahinter." },
+  { s: "Mama fragt: „Wer hat Hunger?“", ok: true, why: "Doppelpunkt nach dem Begleitsatz, Fragezeichen vor dem “." },
   { s: "Leon fragt: „Kommst du mit?“", ok: true, why: "Doppelpunkt, Anführungszeichen unten und oben – alles perfekt!" },
   { s: "„Ich habe gewonnen!“, jubelt Ella.", ok: true, why: "Das Ausrufezeichen bleibt, danach kommen “ und das Komma." },
   { s: "Oma erzählt: „Früher war alles anders.“", ok: true, why: "Die Rede beginnt groß, der Punkt steht vor dem “." },
@@ -165,7 +165,7 @@ const fehlerData = [
   { s: "Leon fragt: Kommst du mit?", ok: false, fix: "Leon fragt: „Kommst du mit?“", why: "Die Anführungszeichen fehlen." },
   { s: "Mia flüstert: „Ich habe ein Geheimnis.", ok: false, fix: "Mia flüstert: „Ich habe ein Geheimnis.“", why: "Das Schluss-Anführungszeichen oben fehlt." },
   { s: "„Hilfe!“, ruft Ben", ok: false, fix: "„Hilfe!“, ruft Ben.", why: "Am Ende des Begleitsatzes fehlt der Punkt." },
-  { s: "„Heute“ sagt Oma „backen wir Kuchen.“", ok: false, fix: "„Heute“, sagt Oma, „backen wir Kuchen.“", why: "Um den Begleitsatz in der Mitte fehlen die Kommas." },
+  { s: "Tim ruft: „Komm schnell!“.", ok: false, fix: "Tim ruft: „Komm schnell!“", why: "Nach dem “ kommt kein Punkt mehr – das Ausrufezeichen beendet den Satz schon." },
   { s: "Lisa fragt, „Spielst du mit?“", ok: false, fix: "Lisa fragt: „Spielst du mit?“", why: "Nach dem Begleitsatz vorne steht ein Doppelpunkt, kein Komma." },
   { s: "Opa erzählt: „früher war alles anders.“", ok: false, fix: "Opa erzählt: „Früher war alles anders.“", why: "Die wörtliche Rede beginnt mit einem großen Buchstaben." },
   { s: "„Ich komme gleich,“ sagt Anna.", ok: false, fix: "„Ich komme gleich“, sagt Anna.", why: "Das Komma steht erst nach dem Schluss-Anführungszeichen." },
@@ -227,19 +227,19 @@ const regenWords = [
 const storyData = [
   {
     title: "Der verschwundene Hamster", e: "🐹",
-    text: "Am Morgen ist der Käfig leer. Lea ruft{:} {„}Krümel ist weg{!}{“} Mama fragt{:} {„}Hast du die Tür offen gelassen{?}{“} {„}Nein{“}{,} sagt Lea traurig{.} Da hört Papa ein Rascheln. {„}Pssst{“}{,} flüstert er{,} {„}ich glaube, er ist unter dem Sofa{.}{“} Lea jubelt{:} {„}Da ist er ja{!}{“}"
+    text: "Am Morgen ist der Käfig leer. Lea ruft{:} {„}Krümel ist weg{!}{“} Mama fragt{:} {„}Hast du die Tür offen gelassen{?}{“} {„}Nein{“}{,} sagt Lea traurig{.} Da hört Papa ein Rascheln. Er flüstert{:} {„}Pssst, ich glaube, er ist unter dem Sofa{.}{“} Lea jubelt{:} {„}Da ist er ja{!}{“}"
   },
   {
     title: "Das große Fußballspiel", e: "⚽",
-    text: "Heute ist das große Spiel. Der Trainer ruft{:} {„}Alle auf den Platz{!}{“} {„}Wo ist mein Trikot{?}{“}{,} fragt Ben{.} Emma lacht{:} {„}Du hast es doch schon an{.}{“} Nach dem Spiel jubeln alle. {„}Wir haben gewonnen{!}{“}{,} ruft die Mannschaft{.} {„}Morgen{“}{,} sagt der Trainer{,} {„}feiern wir eine Party{.}{“}"
+    text: "Heute ist das große Spiel. Der Trainer ruft{:} {„}Alle auf den Platz{!}{“} {„}Wo ist mein Trikot{?}{“}{,} fragt Ben{.} Emma lacht{:} {„}Du hast es doch schon an{.}{“} Nach dem Spiel jubeln alle. {„}Wir haben gewonnen{!}{“}{,} ruft die Mannschaft{.} {„}Morgen feiern wir eine Party{“}{,} verspricht der Trainer{.}"
   },
   {
     title: "Der Ausflug in den Zoo", e: "🐒",
-    text: "Die Klasse 4b fährt in den Zoo. Frau Klein sagt{:} {„}Bleibt bitte zusammen{.}{“} {„}Dürfen wir zu den Affen{?}{“}{,} fragt Noah{.} {„}Na klar{“}{,} antwortet Frau Klein{.} Vor dem Gehege kichert Mia{:} {„}Der kleine Affe winkt uns zu{!}{“} {„}Schaut mal{“}{,} ruft Paul{,} {„}er klaut dem Tierpfleger die Mütze{!}{“}"
+    text: "Die Klasse 4b fährt in den Zoo. Frau Klein sagt{:} {„}Bleibt bitte zusammen{.}{“} {„}Dürfen wir zu den Affen{?}{“}{,} fragt Noah{.} {„}Na klar{“}{,} antwortet Frau Klein{.} Vor dem Gehege kichert Mia{:} {„}Der kleine Affe winkt uns zu{!}{“} {„}Schaut mal, er klaut dem Tierpfleger die Mütze{!}{“}{,} ruft Paul{.}"
   },
   {
     title: "Die Geburtstagsüberraschung", e: "🎂",
-    text: "Oma hat heute Geburtstag. Tim flüstert{:} {„}Seid ganz leise{.}{“} {„}Wann kommt Oma endlich{?}{“}{,} fragt Lina{.} Da geht die Tür auf. {„}Überraschung{!}{“}{,} rufen alle{.} Oma staunt{:} {„}Ihr seid die Besten{!}{“} {„}Und jetzt{“}{,} sagt Papa{,} {„}gibt es Kuchen{.}{“}"
+    text: "Oma hat heute Geburtstag. Tim flüstert{:} {„}Seid ganz leise{.}{“} {„}Wann kommt Oma endlich{?}{“}{,} fragt Lina{.} Da geht die Tür auf. {„}Überraschung{!}{“}{,} rufen alle{.} Oma staunt{:} {„}Ihr seid die Besten{!}{“} Papa sagt{:} {„}Und jetzt gibt es Kuchen{.}{“}"
   }
 ];
 
@@ -705,59 +705,91 @@ function TokenBoard({ pool, answer, onPick, onRemove, wrong, solved }) {
 // ==========================================
 function RulesModal({ onClose }) {
   const ex = { who: "Tim", verb: "sagt", say: "Ich habe Hunger." };
-  const exQ = { who: "Tim", verb: "fragt", say: "Hast du Hunger?" };
+  const exQ = { who: "Mia", verb: "fragt", say: "Kommst du mit?" };
   const exM = { who: "Tim", verb: "sagt", a: "Heute", b: "habe ich großen Hunger." };
-  const heroes = [
-    { sign: ':', name: 'Dora Doppelpunkt', text: 'Ich stehe hinter dem Begleitsatz, wenn er VORNE steht. Ich rufe: Achtung, gleich spricht jemand!', color: 'border-cyan-400 text-cyan-300' },
-    { sign: '„ “', name: 'Anton Anführungszeichen', text: 'Ich umarme alles, was gesprochen wird: unten „ am Anfang, oben “ am Ende.', color: 'border-yellow-400 text-yellow-300' },
-    { sign: ',', name: 'Kalle Komma', text: 'Steht der Begleitsatz HINTEN oder in der MITTE, trenne ich ihn von der Rede.', color: 'border-pink-400 text-pink-300' }
+
+  const begriffe = [
+    { name: 'Wörtliche Rede', color: 'text-yellow-300 border-yellow-400', text: 'Das, was jemand genau sagt – wie in einer Sprechblase.' },
+    { name: 'Begleitsatz', color: 'text-cyan-300 border-cyan-400', text: 'Er verrät, wer spricht und wie gesprochen wird.' },
+    { name: 'Redeverb', color: 'text-fuchsia-300 border-fuchsia-400', text: 'Das Verb im Begleitsatz: sagt, ruft, fragt, flüstert, antwortet … (Wortfeld „sagen“)' },
+    { name: 'Redezeichen', color: 'text-pink-300 border-pink-400', text: 'Die Satzzeichen der wörtlichen Rede: Anführungszeichen „ “, Doppelpunkt : und Komma ,' }
   ];
+
+  const Rule = ({ nr, color, title, hero, children }) => (
+    <div className={`bg-indigo-900/60 p-4 rounded-2xl border-l-8 ${color.border}`}>
+      <div className="flex justify-between items-start gap-2 flex-wrap">
+        <h4 className={`${color.text} font-black text-xl`}>{nr}. Regel: {title}</h4>
+        {hero && <span className={`text-xs font-bold px-2 py-1 rounded-full bg-slate-900/70 ${color.text}`}>{hero}</span>}
+      </div>
+      {children}
+    </div>
+  );
+  const Example = ({ tokens }) => <p className="text-xl md:text-2xl mt-2 bg-slate-950/50 p-3 rounded-xl"><ColoredSentence tokens={tokens} /></p>;
+
   return (
     <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[150] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
       <div className="bg-indigo-950 border-4 border-yellow-400 rounded-3xl max-w-3xl w-full p-6 md:p-8 shadow-[0_0_50px_rgba(250,204,21,0.3)] anim-pop relative flex flex-col max-h-[92vh]">
         <h3 className="text-3xl md:text-5xl font-comic text-yellow-300 mb-4 text-center flex justify-center items-center gap-3 drop-shadow-md">
-          <BookOpen className="w-8 h-8 flex-shrink-0 anim-float" /> Die Heldenregeln
+          <BookOpen className="w-8 h-8 flex-shrink-0 anim-float" /> Die 4 Regeln
         </h3>
         <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar flex flex-col gap-4 mb-6">
-          <div className="bg-indigo-900/60 p-4 rounded-2xl border-l-8 border-yellow-400">
-            <p className="text-indigo-100 text-lg"><b className="text-yellow-300">Wörtliche Rede</b> ist genau das, was jemand sagt – wie in einer Sprechblase. <b className="text-cyan-300">Der Begleitsatz</b> verrät, <i>wer</i> spricht und <i>wie</i>.</p>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {heroes.map(h => (
-              <div key={h.name} className={`bg-slate-900/70 p-3 rounded-2xl border-2 ${h.color} text-center`}>
-                <div className="text-4xl font-serif font-black mb-1">{h.sign}</div>
-                <div className="font-black text-sm mb-1">{h.name}</div>
-                <p className="text-slate-300 text-xs leading-snug">{h.text}</p>
+          {/* Wichtige Begriffe */}
+          <div className="bg-slate-900/70 p-4 rounded-2xl border-2 border-slate-600">
+            <h4 className="text-slate-100 font-black text-lg uppercase tracking-widest mb-3 text-center">Wichtige Begriffe</h4>
+            <div className="flex flex-wrap justify-center items-end gap-x-3 gap-y-2 mb-4 text-xl md:text-3xl font-serif">
+              <div className="flex flex-col items-center">
+                <span className="text-cyan-300 font-bold border-b-4 border-cyan-400 px-1">Tim <span className="text-fuchsia-300 underline decoration-wavy decoration-fuchsia-400">sagt</span><span className="text-pink-400 font-black">:</span></span>
+                <span className="text-xs font-sans font-bold text-cyan-300 mt-1">Begleitsatz</span>
               </div>
-            ))}
+              <div className="flex flex-col items-center">
+                <span className="text-yellow-200 border-b-4 border-yellow-400 px-1"><span className="text-pink-400 font-black">„</span>Ich habe Hunger.<span className="text-pink-400 font-black">“</span></span>
+                <span className="text-xs font-sans font-bold text-yellow-300 mt-1">wörtliche Rede</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {begriffe.map(b => (
+                <div key={b.name} className={`bg-indigo-950/80 p-3 rounded-xl border-l-4 ${b.color.split(' ')[1]}`}>
+                  <span className={`font-black ${b.color.split(' ')[0]}`}>{b.name}</span>
+                  <p className="text-slate-300 text-sm leading-snug">{b.text}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="bg-indigo-900/60 p-4 rounded-2xl border-l-8 border-cyan-400">
-            <h4 className="text-cyan-300 font-bold text-xl flex items-center gap-2 flex-wrap">1. Begleitsatz VORNE <Blueprint mode="vorne" small /></h4>
-            <p className="text-2xl mt-2 bg-slate-950/50 p-3 rounded-xl"><ColoredSentence tokens={buildTokens(ex, 'vorne')} /></p>
-            <p className="text-indigo-100 mt-2">Nach dem Begleitsatz steht ein <b>Doppelpunkt</b>. Das Satzzeichen der Rede steht <b>vor</b> dem “.</p>
-          </div>
+          <Rule nr={1} color={{ text: 'text-yellow-300', border: 'border-yellow-400' }} title="Anführungszeichen" hero="Anton Anführungszeichen „ “">
+            <p className="text-indigo-100 mt-1">Die wörtliche Rede steht zwischen <b>Anführungszeichen</b>: am Anfang <b>unten „</b>, am Ende <b>oben “</b>.</p>
+            <Example tokens={buildTokens(ex, 'vorne')} />
+          </Rule>
 
-          <div className="bg-indigo-900/60 p-4 rounded-2xl border-l-8 border-pink-400">
-            <h4 className="text-pink-300 font-bold text-xl flex items-center gap-2 flex-wrap">2. Begleitsatz HINTEN <Blueprint mode="hinten" small /></h4>
-            <p className="text-2xl mt-2 bg-slate-950/50 p-3 rounded-xl"><ColoredSentence tokens={buildTokens(ex, 'hinten')} /></p>
-            <p className="text-2xl mt-2 bg-slate-950/50 p-3 rounded-xl"><ColoredSentence tokens={buildTokens(exQ, 'hinten')} /></p>
+          <Rule nr={2} color={{ text: 'text-orange-300', border: 'border-orange-400' }} title="Großer Anfang, Zeichen drinnen">
+            <p className="text-indigo-100 mt-1">Die wörtliche Rede beginnt mit einem <b>großen Buchstaben</b>. Ihr Satzzeichen <b>( . ? ! )</b> steht <b>vor</b> dem Schluss-Anführungszeichen “.</p>
+            <Example tokens={buildTokens(exQ, 'vorne')} />
+          </Rule>
+
+          <Rule nr={3} color={{ text: 'text-cyan-300', border: 'border-cyan-400' }} title="Begleitsatz vorne" hero="Dora Doppelpunkt :">
+            <p className="text-indigo-100 mt-1 flex items-center gap-2 flex-wrap">Steht der Begleitsatz <b>vorne</b>, kommt danach ein <b>Doppelpunkt</b>. <Blueprint mode="vorne" small /></p>
+            <Example tokens={buildTokens(ex, 'vorne')} />
+          </Rule>
+
+          <Rule nr={4} color={{ text: 'text-pink-300', border: 'border-pink-400' }} title="Begleitsatz hinten" hero="Kalle Komma ,">
+            <p className="text-indigo-100 mt-1 flex items-center gap-2 flex-wrap">Steht der Begleitsatz <b>hinten</b>, kommt nach dem “ ein <b>Komma</b>. <Blueprint mode="hinten" small /></p>
+            <Example tokens={buildTokens(ex, 'hinten')} />
+            <Example tokens={buildTokens(exQ, 'hinten')} />
             <ul className="text-indigo-100 mt-2 list-disc pl-6 space-y-1">
-              <li>Nach dem “ kommt ein <b>Komma</b>, am Ende ein <b>Punkt</b>.</li>
               <li>Der <b>Punkt</b> der Rede <b>fällt weg</b>. <b>?</b> und <b>!</b> bleiben stehen.</li>
-              <li>Der Begleitsatz beginnt <b>klein</b>.</li>
+              <li>Der Begleitsatz beginnt <b>klein</b> und endet mit einem <b>Punkt</b>.</li>
             </ul>
-          </div>
-
-          <div className="bg-indigo-900/60 p-4 rounded-2xl border-l-8 border-lime-400">
-            <h4 className="text-lime-300 font-bold text-xl flex items-center gap-2 flex-wrap">3. Begleitsatz in der MITTE <span className="text-xs bg-lime-400 text-lime-950 px-2 py-0.5 rounded-full">Profi</span> <Blueprint mode="mitte" small /></h4>
-            <p className="text-2xl mt-2 bg-slate-950/50 p-3 rounded-xl"><ColoredSentence tokens={buildTokens(exM, 'mitte')} /></p>
-            <p className="text-indigo-100 mt-2">Der Begleitsatz wird von <b>zwei Kommas</b> eingerahmt. Die Rede geht danach <b>klein</b> weiter.</p>
-          </div>
+          </Rule>
 
           <div className="bg-yellow-400/10 border-2 border-yellow-400/40 p-3 rounded-2xl text-center text-yellow-200 font-bold">
             Merksatz: Begleitsatz vorne → Doppelpunkt. Begleitsatz hinten → Komma!
+          </div>
+
+          <div className="bg-slate-900/60 p-4 rounded-2xl border-2 border-dashed border-lime-400/60">
+            <h4 className="text-lime-300 font-bold text-lg flex items-center gap-2 flex-wrap"><span className="text-xs bg-lime-400 text-lime-950 font-black px-2 py-0.5 rounded-full">PROFI-REGEL</span> Begleitsatz in der Mitte <Blueprint mode="mitte" small /></h4>
+            <Example tokens={buildTokens(exM, 'mitte')} />
+            <p className="text-indigo-200 mt-2 text-sm">Der Begleitsatz wird von <b>zwei Kommas</b> eingerahmt. Die Rede geht danach <b>klein</b> weiter. Das kannst du in der Profi-Zone üben!</p>
           </div>
         </div>
         <button onClick={onClose} className="w-full bg-yellow-400 hover:bg-yellow-300 text-indigo-950 font-black text-lg py-4 rounded-xl shadow-[0_4px_0_rgba(161,98,7,1)] active:translate-y-1 uppercase tracking-wider">Alles klar!</button>
@@ -810,7 +842,7 @@ function HelpModal({ onClose }) {
 
 // Abzeichen-Sammlung (Schatzkammer)
 function TreasureModal({ onClose, gameProgress }) {
-  const totalUnlocked = GAMES.filter(g => (gameProgress[g.id]?.score || 0) >= 10).length;
+  const totalUnlocked = CORE_GAMES.filter(g => (gameProgress[g.id]?.score || 0) >= 10).length;
 
   return (
     <div className="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-[150] flex items-center justify-center p-4 overflow-y-auto">
@@ -824,7 +856,7 @@ function TreasureModal({ onClose, gameProgress }) {
 
         <p className="text-slate-300 text-lg md:text-xl mb-6 text-center font-bold">
           Sammle <span className="text-yellow-300">volle 10 Sterne</span> in einem Spiel, um sein Abzeichen zu bekommen! <br />
-          <span className="text-sm opacity-70">Gesammelte Abzeichen: {totalUnlocked} / {GAMES.length}</span>
+          <span className="text-sm opacity-70">Gesammelte Abzeichen: {totalUnlocked} / {CORE_GAMES.length}{(gameProgress.profi?.score || 0) >= 10 ? ' + Profi-Abzeichen' : ''}</span>
         </p>
 
         <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar">
@@ -852,7 +884,7 @@ function TreasureModal({ onClose, gameProgress }) {
                     {isUnlocked ? b.name : '???'}
                   </h4>
                   <div className={`w-full text-center text-[10px] md:text-xs font-bold py-1 px-2 rounded-lg mt-auto ${isUnlocked ? 'bg-yellow-500/20 text-yellow-200' : 'bg-slate-800 text-slate-500'}`}>
-                    {isUnlocked ? 'Freigeschaltet!' : `Fehlt in: ${i + 1}. ${game.title}`}
+                    {isUnlocked ? (game.profi ? 'Profi-Abzeichen!' : 'Freigeschaltet!') : game.profi ? 'Bonus im Profi-Labor' : `Fehlt in: ${i + 1}. ${game.title}`}
                   </div>
                 </div>
               );
@@ -860,7 +892,7 @@ function TreasureModal({ onClose, gameProgress }) {
           </div>
         </div>
 
-        {totalUnlocked === GAMES.length && (
+        {totalUnlocked === CORE_GAMES.length && (
           <div className="mt-6 p-4 bg-yellow-900/40 border-2 border-yellow-400 rounded-xl text-center anim-pop">
             <h4 className="text-yellow-300 font-black text-xl flex items-center justify-center gap-2"><Star className="w-6 h-6 fill-yellow-300" /> Superheld der wörtlichen Rede! <Star className="w-6 h-6 fill-yellow-300" /></h4>
             <p className="text-yellow-100/80 mt-1">Du hast alle Abzeichen gesammelt. Comic-Stadt ist gerettet!</p>
@@ -877,7 +909,7 @@ function TreasureModal({ onClose, gameProgress }) {
 
 // 1. Stimmen-Marker: Rede gelb, Begleitsatz blau markieren
 function MarkerGame({ onFinish, onShowTip }) {
-  const [items] = useState(() => makeRedeItems(2, 2, 1));
+  const [items] = useState(() => makeRedeItems(3, 2, 0));
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
   const fb = useGameFeedback(onShowTip);
@@ -995,7 +1027,7 @@ function MarkerRound({ item, fb, onNext }) {
 
 // 2. Begleitsatz-Radar: Wo steht der Begleitsatz?
 function SortGame({ onFinish, onShowTip }) {
-  const [items] = useState(() => makeRedeItems(4, 4, 2).map(it => ({ text: joinTokens(it.tokens), mode: it.mode })));
+  const [items] = useState(() => makeRedeItems(5, 5, 0).map(it => ({ text: joinTokens(it.tokens), mode: it.mode })));
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [wrongGuesses, setWrongGuesses] = useState([]);
@@ -1015,15 +1047,14 @@ function SortGame({ onFinish, onShowTip }) {
         else onFinish(s, 10);
       }, 1600);
     } else {
-      fb.bad("Suche zuerst die Anführungszeichen „ … “. Was davor oder dahinter steht, ist der Begleitsatz. Steht er zwischen zwei Redeteilen, ist er in der Mitte!");
+      fb.bad("Suche zuerst die Anführungszeichen „ … “. Was davor oder dahinter steht, ist der Begleitsatz. Steht zuerst der Begleitsatz mit Doppelpunkt? Dann ist er vorne!");
       setWrongGuesses(g => [...g, mode]);
     }
   };
 
   const gates = [
     { mode: 'vorne', label: 'Begleitsatz VORNE' },
-    { mode: 'hinten', label: 'Begleitsatz HINTEN' },
-    { mode: 'mitte', label: 'IN DER MITTE', profi: true }
+    { mode: 'hinten', label: 'Begleitsatz HINTEN' }
   ];
 
   return (
@@ -1037,7 +1068,7 @@ function SortGame({ onFinish, onShowTip }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
         {gates.map(g => {
           const isRight = solved && g.mode === item.mode;
           const isWrong = wrongGuesses.includes(g.mode);
@@ -1152,7 +1183,7 @@ function ComicGame({ onFinish, onShowTip }) {
 
 // 4. Zeichen-Werkstatt: Satzzeichen in Kästchen setzen
 function ZeichenGame({ onFinish, onShowTip }) {
-  const [items] = useState(() => makeRedeItems(2, 2, 1).map(it => ({ ...it, seq: tokensToSeq(it.tokens) })));
+  const [items] = useState(() => makeRedeItems(3, 2, 0).map(it => ({ ...it, seq: tokensToSeq(it.tokens) })));
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
   const fb = useGameFeedback(onShowTip);
@@ -1270,7 +1301,7 @@ function FehlerGame({ onFinish, onShowTip }) {
 
 // 6. Satz-Puzzle: Bausteine in die richtige Reihenfolge bringen
 function PuzzleGame({ onFinish, onShowTip }) {
-  const [items] = useState(() => makeRedeItems(2, 2, 1));
+  const [items] = useState(() => makeRedeItems(3, 2, 0));
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
   const fb = useGameFeedback(onShowTip);
@@ -1743,7 +1774,7 @@ function SchreibRound({ item, fb, onNext }) {
       setSolved(true);
     } else {
       setTries(t => t + 1);
-      fb.bad("Schreibe Schritt für Schritt: Begleitsatz – Zeichen – „ – Rede – Satzzeichen – “. Schau in die Heldenregeln, wenn du unsicher bist!", diagnoseAnswer(text, item.solution, item.mode));
+      fb.bad("Schreibe Schritt für Schritt: Begleitsatz – Zeichen – „ – Rede – Satzzeichen – “. Schau in die 4 Regeln (oben links), wenn du unsicher bist!", diagnoseAnswer(text, item.solution, item.mode));
     }
   };
 
@@ -1813,7 +1844,7 @@ function FinaleGame({ onFinish, onShowTip }) {
     if (wrong < 0) { fb.info("Fülle zuerst alle Kästchen aus! ✏️"); return; }
     if (wrong === 0) { fb.good(null, 3000); setSolved(true); }
     else {
-      fb.bad("Nimm dir Satz für Satz vor: Wo steht der Begleitsatz – vorne, hinten oder in der Mitte? Dann weißt du, ob Doppelpunkt oder Komma kommt.", `${wrong} ${wrong === 1 ? 'Zeichen ist' : 'Zeichen sind'} noch falsch – die grünen bleiben stehen!`);
+      fb.bad("Nimm dir Satz für Satz vor: Steht der Begleitsatz vorne oder hinten? Dann weißt du, ob Doppelpunkt oder Komma kommt.", `${wrong} ${wrong === 1 ? 'Zeichen ist' : 'Zeichen sind'} noch falsch – die grünen bleiben stehen!`);
       setMistakes(m => m + 1);
     }
   };
@@ -1850,12 +1881,81 @@ function FinaleGame({ onFinish, onShowTip }) {
   );
 }
 
+// PROFI: Begleitsatz in der Mitte (freiwillige Zusatzaufgaben)
+function ProfiGame({ onFinish, onShowTip }) {
+  const [items] = useState(() => shuffleArray(mitteData).slice(0, 5).map((d, i) => {
+    const tokens = buildTokens(d, 'mitte');
+    return { ...d, mode: 'mitte', tokens, seq: tokensToSeq(tokens), kind: i % 2 === 0 ? 'zeichen' : 'puzzle' };
+  }));
+  const [idx, setIdx] = useState(0);
+  const [score, setScore] = useState(0);
+  const fb = useGameFeedback(onShowTip);
+  const item = items[idx];
+  const tip = "Begleitsatz in der Mitte: Nach dem ersten “ kommt ein Komma, dann der Begleitsatz, wieder ein Komma – und dann geht die Rede mit „ weiter.";
+
+  const next = (stars) => {
+    fb.clear();
+    const s = score + stars;
+    if (idx + 1 < items.length) { setScore(s); setIdx(idx + 1); } else onFinish(s, 10);
+  };
+
+  return (
+    <div className="w-full text-center">
+      <GameTitle icon={Rocket} color="text-lime-300" title="Profi-Labor">
+        <span className="inline-block text-xs bg-lime-400 text-lime-950 font-black px-2 py-0.5 rounded-full mr-2 align-middle">PROFI</span>
+        Der Begleitsatz steht <b className="text-lime-300">in der Mitte</b> – er unterbricht die wörtliche Rede.
+      </GameTitle>
+      <div className="flex justify-center mb-4">
+        <span className="bg-lime-900/40 border-2 border-lime-400/40 text-lime-100 font-bold px-4 py-2 rounded-2xl flex items-center gap-3 flex-wrap justify-center">Bauplan: <Blueprint mode="mitte" small /> <span className="text-sm opacity-80">Kommas vor und nach dem Begleitsatz!</span></span>
+      </div>
+      <RoundInfo current={idx} total={items.length} />
+      <p className="text-slate-300 mb-4 font-bold">{item.kind === 'zeichen' ? 'Setze die fehlenden Zeichen ein.' : 'Baue den Satz aus den Bausteinen.'}</p>
+      {item.kind === 'zeichen' ? (
+        <ProfiZeichenRound key={idx} item={item} fb={fb} tip={tip} onNext={next} />
+      ) : (
+        <BuildRound key={idx} target={item.tokens} extra={[]} color="bg-lime-600 hover:bg-lime-500" tip={tip} explain={MODE_EXPLAIN.mitte} fb={fb} onNext={next} />
+      )}
+      <ImmediateFeedback msg={fb.msg} type={fb.type} />
+    </div>
+  );
+}
+
+function ProfiZeichenRound({ item, fb, tip, onNext }) {
+  const slots = useSlots(item.seq);
+  const [mistakes, setMistakes] = useState(0);
+  const [solved, setSolved] = useState(false);
+
+  const check = () => {
+    const wrong = slots.check();
+    if (wrong < 0) { fb.info("Fülle zuerst alle Kästchen aus! ✏️"); return; }
+    if (wrong === 0) { fb.good(); setSolved(true); }
+    else { fb.bad(tip, `${wrong} ${wrong === 1 ? 'Zeichen ist' : 'Zeichen sind'} noch falsch – schau auf die roten Kästchen!`); setMistakes(m => m + 1); }
+  };
+
+  return (
+    <div>
+      <SlotSentence seq={item.seq} filled={slots.filled} status={slots.status} selected={slots.selected} onSlotClick={slots.selectSlot} solved={solved} />
+      {!solved ? (
+        <>
+          <SignToolbar onSign={slots.placeSign} onErase={slots.erase} />
+          <CheckButton onClick={check} color="bg-lime-600 hover:bg-lime-500" />
+        </>
+      ) : (
+        <div className="anim-pop mt-6 flex flex-col items-center gap-4">
+          <div className="bg-indigo-950/80 p-4 rounded-xl text-lime-200 max-w-2xl">{MODE_EXPLAIN.mitte}</div>
+          <NextButton onClick={() => onNext(mistakes === 0 ? 2 : 0)} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ==========================================
 // SPIELE-ÜBERSICHT & LERNPFADE
 // ==========================================
 const GAMES = [
   { id: 'marker', title: 'Stimmen-Marker', desc: 'Rede gelb, Begleitsatz blau!', icon: Highlighter, color: 'yellow', comp: MarkerGame, help: 'Markiere die wörtliche Rede gelb und den Begleitsatz blau.', badge: { name: 'Leucht-Marker', icon: Highlighter, color: 'text-yellow-300', bg: 'bg-yellow-900/40', border: 'border-yellow-400' } },
-  { id: 'sortieren', title: 'Begleitsatz-Radar', desc: 'Vorne, hinten oder Mitte?', icon: Radar, color: 'cyan', comp: SortGame, help: 'Entscheide, wo der Begleitsatz steht: vorne, hinten oder in der Mitte.', badge: { name: 'Radar-Brille', icon: Radar, color: 'text-cyan-300', bg: 'bg-cyan-900/40', border: 'border-cyan-400' } },
+  { id: 'sortieren', title: 'Begleitsatz-Radar', desc: 'Vorne oder hinten?', icon: Radar, color: 'cyan', comp: SortGame, help: 'Entscheide, ob der Begleitsatz vorne oder hinten steht.', badge: { name: 'Radar-Brille', icon: Radar, color: 'text-cyan-300', bg: 'bg-cyan-900/40', border: 'border-cyan-400' } },
   { id: 'comic', title: 'Comic-Check', desc: 'Welcher Satz ist richtig?', icon: MessageCircle, color: 'sky', comp: ComicGame, help: 'Aus der Sprechblase wird ein Satz. Wähle die richtige Schreibweise.', badge: { name: 'Goldene Sprechblase', icon: MessageCircle, color: 'text-amber-300', bg: 'bg-amber-900/40', border: 'border-amber-400' } },
   { id: 'zeichen', title: 'Zeichen-Werkstatt', desc: 'Setze die Satzzeichen ein.', icon: Wand2, color: 'amber', comp: ZeichenGame, help: 'Tippe ein Kästchen an und setze das richtige Satzzeichen ein.', badge: { name: 'Zeichen-Zauberstab', icon: Wand2, color: 'text-orange-300', bg: 'bg-orange-900/40', border: 'border-orange-400' } },
   { id: 'fehler', title: 'Fehler-Detektiv', desc: 'Richtig oder Fehler?', icon: Search, color: 'rose', comp: FehlerGame, help: 'Ist der Satz richtig geschrieben? Oder hat sich ein Fehler versteckt?', badge: { name: 'Detektiv-Lupe', icon: Search, color: 'text-rose-300', bg: 'bg-rose-900/40', border: 'border-rose-400' } },
@@ -1865,8 +1965,10 @@ const GAMES = [
   { id: 'regen', title: 'Wörter-Regen', desc: 'Sortiere blitzschnell!', icon: CloudRain, color: 'violet', comp: RegenGame, help: 'Die Wörter fallen! Gehören sie zum Wortfeld „sagen“ oder nicht?', badge: { name: 'Blitz-Medaille', icon: Zap, color: 'text-violet-300', bg: 'bg-violet-900/40', border: 'border-violet-400' } },
   { id: 'umstellen', title: 'Umstell-Maschine', desc: 'Begleitsatz umstellen.', icon: Repeat, color: 'lime', comp: UmstellGame, help: 'Stelle den Begleitsatz von vorne nach hinten – oder umgekehrt.', badge: { name: 'Umstell-Magnet', icon: Repeat, color: 'text-lime-300', bg: 'bg-lime-900/40', border: 'border-lime-400' } },
   { id: 'sprechblase', title: 'Sprechblasen-Schreiber', desc: 'Schreibe selbst!', icon: PenTool, color: 'emerald', comp: SchreibGame, help: 'Schreibe die Sprechblase als wörtliche Rede auf – mit allen Zeichen.', badge: { name: 'Goldene Feder', icon: PenTool, color: 'text-emerald-300', bg: 'bg-emerald-900/40', border: 'border-emerald-400' } },
-  { id: 'finale', title: 'Comic-Finale', desc: 'Rette die Geschichte!', icon: Crown, color: 'teal', comp: FinaleGame, help: 'Setze in einer ganzen Geschichte alle Zeichen der wörtlichen Rede ein.', badge: { name: 'Heldenkrone', icon: Crown, color: 'text-yellow-300', bg: 'bg-yellow-900/50', border: 'border-yellow-300' } }
+  { id: 'finale', title: 'Comic-Finale', desc: 'Rette die Geschichte!', icon: Crown, color: 'teal', comp: FinaleGame, help: 'Setze in einer ganzen Geschichte alle Zeichen der wörtlichen Rede ein.', badge: { name: 'Heldenkrone', icon: Crown, color: 'text-yellow-300', bg: 'bg-yellow-900/50', border: 'border-yellow-300' } },
+  { id: 'profi', profi: true, title: 'Profi-Labor', desc: 'Begleitsatz in der Mitte', icon: Rocket, color: 'lime', comp: ProfiGame, help: 'Freiwillige Profi-Aufgaben: Der Begleitsatz steht in der Mitte der wörtlichen Rede.', badge: { name: 'Profi-Rakete', icon: Rocket, color: 'text-lime-300', bg: 'bg-lime-900/40', border: 'border-lime-300' } }
 ];
+const CORE_GAMES = GAMES.filter(g => !g.profi);
 
 const gameOrder = GAMES.map(g => g.id);
 const gameById = (id) => GAMES.find(g => g.id === id);
@@ -1879,9 +1981,11 @@ const PATHS = [
 ];
 
 // Welches Spiel muss vorher mit 9 Sternen geschafft sein?
-const UNLOCK_REQ = { sortieren: 'marker', comic: 'sortieren', fehler: 'zeichen', puzzle: 'fehler', redeverb: 'memory', regen: 'redeverb', umstellen: 'zeichen', sprechblase: 'umstellen', finale: 'sprechblase' };
+const UNLOCK_REQ = { sortieren: 'marker', comic: 'sortieren', fehler: 'zeichen', puzzle: 'fehler', redeverb: 'memory', regen: 'redeverb', umstellen: 'zeichen', sprechblase: 'umstellen', finale: 'sprechblase', profi: 'zeichen' };
 const BASICS = ['marker', 'zeichen', 'memory'];
-const totalMaxScore = GAMES.length * 10;
+const totalMaxScore = CORE_GAMES.length * 10;
+// Nur die 12 Kernspiele zählen zu den 120 Sternen – Profi-Sterne sind Bonus.
+const sumCoreScores = (progress) => CORE_GAMES.reduce((acc, g) => acc + (progress[g.id]?.score || 0), 0);
 const ADMIN_PASSWORD = "Rede123";
 
 // ==========================================
@@ -1924,7 +2028,7 @@ const parseCode = (input) => {
   return { progress, total };
 };
 
-function SaveLoadModal({ onClose, gameProgress, setGameProgress, setGlobalScore }) {
+function SaveLoadModal({ onClose, gameProgress, setGameProgress }) {
   const [inputCode, setInputCode] = useState("");
   const [error, setError] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -1935,7 +2039,6 @@ function SaveLoadModal({ onClose, gameProgress, setGameProgress, setGlobalScore 
     const result = parseCode(inputCode);
     if (!result) { setError(true); setTimeout(() => setError(false), 1500); return; }
     setGameProgress(result.progress);
-    setGlobalScore(result.total);
     setSuccess(true);
     setTimeout(() => onClose(), 1500);
   };
@@ -2015,8 +2118,7 @@ function AdminAuthModal({ onLogin, onClose }) {
   );
 }
 
-function AdminControlModal({ onClose, gameProgress, setGameProgress, setGlobalScore }) {
-  const sumScores = (p) => Object.values(p).reduce((acc, x) => acc + (x?.score || 0), 0);
+function AdminControlModal({ onClose, gameProgress, setGameProgress }) {
   return (
     <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[200] flex items-center justify-center p-4">
       <div className="bg-slate-900 border-4 border-slate-600 p-8 rounded-3xl max-w-sm w-full text-center anim-pop relative">
@@ -2025,14 +2127,14 @@ function AdminControlModal({ onClose, gameProgress, setGameProgress, setGlobalSc
         <button onClick={() => {
           const updates = {};
           gameOrder.forEach(g => { updates[g] = { status: 'completed', score: 10, max: 10 }; });
-          setGameProgress(updates); setGlobalScore(totalMaxScore); onClose();
+          setGameProgress(updates); onClose();
         }} className="bg-amber-600 hover:bg-amber-500 text-white p-4 rounded-xl mb-4 w-full font-bold">Alles freischalten</button>
         <button onClick={() => {
           const updates = { ...gameProgress };
           BASICS.forEach(g => { updates[g] = { status: 'completed', score: 10, max: 10 }; });
-          setGameProgress(updates); setGlobalScore(sumScores(updates)); onClose();
+          setGameProgress(updates); onClose();
         }} className="bg-teal-600 hover:bg-teal-500 text-white p-4 rounded-xl mb-4 w-full font-bold">Grundlagen abschließen</button>
-        <button onClick={() => { setGameProgress({}); setGlobalScore(0); onClose(); }} className="bg-red-600 hover:bg-red-500 text-white p-4 rounded-xl w-full font-bold">Fortschritt löschen</button>
+        <button onClick={() => { setGameProgress({}); onClose(); }} className="bg-red-600 hover:bg-red-500 text-white p-4 rounded-xl w-full font-bold">Fortschritt löschen</button>
       </div>
     </div>
   );
@@ -2056,8 +2158,9 @@ export default function App() {
   const [showAdminControl, setShowAdminControl] = useState(false);
   const [tipMessage, setTipMessage] = useState(null);
 
-  const [globalScore, setGlobalScore] = useState(0);
   const [gameProgress, setGameProgress] = useState({});
+  const globalScore = sumCoreScores(gameProgress);
+  const profiScore = gameProgress.profi?.score || 0;
   const [hudAnim, setHudAnim] = useState(false);
 
   const getLockState = (gameMode) => {
@@ -2079,7 +2182,7 @@ export default function App() {
     const prevStars = gameProgress[activeGame]?.score || 0;
     const newStars = Math.max(prevStars, earnedStars);
     const diff = newStars - prevStars;
-    if (diff > 0) { setGlobalScore(prev => prev + diff); setHudAnim(true); }
+    if (diff > 0) setHudAnim(true);
     setNewBadge(earnedStars >= 10 && prevStars < 10 ? activeGame : null);
     setFinalScore(earnedStars);
     setMaxScore(maxPossible);
@@ -2118,15 +2221,15 @@ export default function App() {
 
       {showRulesModal && <RulesModal onClose={() => setShowRulesModal(false)} />}
       {showHelpModal && <HelpModal onClose={() => setShowHelpModal(false)} />}
-      {showSaveModal && <SaveLoadModal onClose={() => setShowSaveModal(false)} gameProgress={gameProgress} setGameProgress={setGameProgress} setGlobalScore={setGlobalScore} />}
+      {showSaveModal && <SaveLoadModal onClose={() => setShowSaveModal(false)} gameProgress={gameProgress} setGameProgress={setGameProgress} />}
       {showTreasureModal && <TreasureModal onClose={() => setShowTreasureModal(false)} gameProgress={gameProgress} />}
       {showAdminAuth && <AdminAuthModal onClose={() => setShowAdminAuth(false)} onLogin={() => { setShowAdminAuth(false); setShowAdminControl(true); }} />}
-      {showAdminControl && <AdminControlModal onClose={() => setShowAdminControl(false)} gameProgress={gameProgress} setGameProgress={setGameProgress} setGlobalScore={setGlobalScore} />}
+      {showAdminControl && <AdminControlModal onClose={() => setShowAdminControl(false)} gameProgress={gameProgress} setGameProgress={setGameProgress} />}
 
       {/* HEADER */}
       <div className="fixed top-2 md:top-4 left-2 right-2 md:left-4 md:right-4 z-[100] flex justify-between items-start pointer-events-none gap-1 md:gap-2">
         <div className="flex justify-start pointer-events-auto">
-          <button onClick={() => setShowRulesModal(true)} className="flex items-center gap-1 md:gap-2 bg-slate-900/90 text-yellow-300 font-bold py-2 px-3 md:px-4 rounded-full border-2 border-yellow-500/50 shadow-md whitespace-nowrap"><BookOpen className="w-5 h-5" /><span className="hidden lg:inline uppercase text-sm md:text-base">Heldenregeln</span></button>
+          <button onClick={() => setShowRulesModal(true)} className="flex items-center gap-1 md:gap-2 bg-slate-900/90 text-yellow-300 font-bold py-2 px-3 md:px-4 rounded-full border-2 border-yellow-500/50 shadow-md whitespace-nowrap"><BookOpen className="w-5 h-5" /><span className="hidden md:inline uppercase text-sm md:text-base">Die 4 Regeln</span></button>
         </div>
         <div className="flex-1 flex justify-center gap-1 md:gap-2 pointer-events-auto items-center flex-nowrap">
           <button onClick={() => setShowTreasureModal(true)} className="flex items-center gap-1 md:gap-2 bg-slate-900/90 text-yellow-300 font-bold py-2 px-3 md:px-4 rounded-full border-2 border-yellow-400/50 shadow-[0_0_15px_rgba(250,204,21,0.3)] hover:scale-105 transition-transform whitespace-nowrap"><Trophy className="w-5 h-5" /><span className="hidden lg:inline uppercase text-sm md:text-base">Abzeichen</span></button>
@@ -2179,6 +2282,18 @@ export default function App() {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* PROFI-ZONE (freiwillig) */}
+            <div className="w-full max-w-6xl mt-6 bg-slate-900/50 border-2 border-dashed border-lime-400/50 rounded-3xl p-4 md:p-6 backdrop-blur-sm flex flex-col md:flex-row items-center gap-4 md:gap-8">
+              <div className="flex-1 text-center md:text-left">
+                <h2 className="text-lime-300 font-black text-lg md:text-xl uppercase tracking-widest flex items-center justify-center md:justify-start gap-3"><Rocket className="w-6 h-6" /> Profi-Zone <span className="text-xs bg-lime-400 text-lime-950 px-2 py-0.5 rounded-full normal-case tracking-normal">freiwillig</span></h2>
+                <p className="text-slate-300 mt-2">Für echte Profis: Der Begleitsatz steht <b className="text-lime-300">in der Mitte</b>. Die Sterne hier sind Bonus-Sterne!</p>
+                {profiScore > 0 && <p className="text-lime-300 font-bold mt-1">Bonus-Sterne: {profiScore} / 10</p>}
+              </div>
+              <div className="w-full md:w-72">
+                <MenuButton number="★" progress={gameProgress.profi} lockState={getLockState('profi')} icon={Rocket} color="lime" title="Profi-Labor" desc={gameById('profi').desc} onClick={() => startGame('profi')} />
+              </div>
             </div>
           </div>
         </div>
