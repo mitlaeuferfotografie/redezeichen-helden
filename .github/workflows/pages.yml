@@ -1,0 +1,59 @@
+# Baut die App bei jeder Änderung auf "main" und veröffentlicht sie auf GitHub Pages.
+name: Live-Seite bauen und veröffentlichen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: App bauen
+        run: |
+          mkdir -p build _site
+          cp -r src build/src
+          cd build
+          npm init -y > /dev/null
+          npm install --silent react@18.1.0 react-dom@18.1.0 lucide-react@^0.577.0 esbuild
+          npx esbuild src/index.js --bundle --minify --loader:.js=jsx --jsx=automatic \
+            --define:process.env.NODE_ENV='"production"' --outfile=../_site/bundle.js
+          cd ..
+          node -e "
+            const fs = require('fs');
+            let h = fs.readFileSync('public/index.html', 'utf8');
+            h = h.replace(/<script type=\"module\"[^>]*><\/script>/, '');
+            h = h.replace('</body>', '  <script src=\"bundle.js\"></script>\n  </body>');
+            fs.writeFileSync('_site/index.html', h);
+          "
+          touch _site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
