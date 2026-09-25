@@ -31,10 +31,15 @@ jobs:
           cp -r src build/src
           cd build
           npm init -y > /dev/null
-          npm install --silent react@18.1.0 react-dom@18.1.0 lucide-react@^0.577.0 esbuild
+          npm install --silent react@18.1.0 react-dom@18.1.0 lucide-react@^0.577.0 esbuild tailwindcss@3
           npx esbuild src/index.js --bundle --minify --loader:.js=jsx --jsx=automatic \
             --define:process.env.NODE_ENV='"production"' --outfile=../_site/bundle.js
+          # Tailwind wird beim Bauen erzeugt (kein CDN, keine Verbindung zu Drittanbietern)
+          npx tailwindcss@3 -i src/tailwind-input.css -o ../_site/tailwind.css \
+            --content "src/**/*.{js,jsx},../public/index.html" --minify
           cd ..
+          # Schriften mit ausliefern (keine Verbindung zu Google)
+          cp -r public/fonts _site/fonts
           node -e "
             const fs = require('fs');
             let h = fs.readFileSync('public/index.html', 'utf8');

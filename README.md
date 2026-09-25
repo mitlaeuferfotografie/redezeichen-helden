@@ -7,6 +7,10 @@ In Comic-Stadt sind die Satzzeichen durcheinander – die Kinder helfen Dora Dop
 
 Gehostet über **GitHub Pages**: Jede Änderung auf `main` wird automatisch gebaut und nach ca. 2 Minuten veröffentlicht (`.github/workflows/pages.yml`).
 
+**Keine externen Dienste:** Schriften (Fredoka, Bangers – SIL Open Font License 1.1, Dateien und Lizenzen in `public/fonts/`) und Tailwind CSS (v3, erzeugt aus `src/tailwind-input.css`) werden beim Bauen eingebunden und mit der App ausgeliefert. Es gibt keine Verbindungen zu Google Fonts oder dem Tailwind-CDN.
+
+**Impressum & Datenschutz:** Komponente `ImpressumModal` in `src/App.jsx` (der gesamte Rechtstext in einer Komponente). Erreichbar ohne Passwort über die Fußzeile im Menü („Impressum · Datenschutz“) und über den Link im Lehrer-Bereich (Zahnrad).
+
 ## Lehrplanbezug (Deutsch, Grundschule NRW)
 
 - **Sprache und Sprachgebrauch untersuchen / Richtig schreiben:** Zeichen der wörtlichen Rede korrekt setzen
