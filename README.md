@@ -5,7 +5,7 @@ In Comic-Stadt sind die Satzzeichen durcheinander – die Kinder helfen Dora Dop
 
 **Live-Version:** https://mitlaeuferfotografie.github.io/redezeichen-helden/
 
-[Edit in StackBlitz next generation editor ⚡️](https://stackblitz.com/~/github.com/mitlaeuferfotografie/redezeichen-helden)
+Gehostet über **GitHub Pages**: Jede Änderung auf `main` wird automatisch gebaut und nach ca. 2 Minuten veröffentlicht (`.github/workflows/pages.yml`).
 
 ## Lehrplanbezug (Deutsch, Grundschule NRW)
 
@@ -27,7 +27,7 @@ In Comic-Stadt sind die Satzzeichen durcheinander – die Kinder helfen Dora Dop
 - **„Die 4 Regeln“** (oben links): Fachbegriffe (wörtliche Rede, Begleitsatz, Redeverb, Redezeichen) und die Regeln 1–4 plus Profi-Regel.
 - Mit **9 Sternen** wird das nächste Spiel im Pfad freigeschaltet (Pfad 4 startet nach der Zeichen-Werkstatt).
 - Mit **10 Sternen** gibt es ein **Helden-Abzeichen**.
-- Nach 3 Fehlern in Folge erscheint ein Tipp.
+- Nach 3 Fehlern in Folge erscheint ein Tipp. Im Memory zählen dafür nur vermeidbare Fehlversuche (die passende Karte war schon aufgedeckt) – zufällige Fehlversuche lösen nie einen Tipp aus.
 - **Lehrer-Bereich** (Zahnrad oben): Passwort `Rede123` – alles freischalten, Grundlagen abschließen, Fortschritt löschen.
 
 ## Das kann ich schon
@@ -46,5 +46,10 @@ In Comic-Stadt sind die Satzzeichen durcheinander – die Kinder helfen Dora Dop
 ## Helden-Code
 
 - **13 Zeichen** (`XXXX-XXXX-XXXXX`): Sterne aller 13 Spiele + Stufen der 7 Können-Bausteine + 1 Prüfzeichen gegen Tippfehler. Alphabet ohne I, L, O, U; O/I/L werden beim Eintippen als 0/1/1 gelesen.
-- **Alte 16-stellige Codes** werden weiter gelesen (nur Sterne, Können startet dann neu). Ausnahme: Alte Codes, die ein L enthalten, lassen sich nicht mehr laden, weil L jetzt als 1 gelesen wird.
+- **Alte 16-stellige Codes** werden weiter gelesen (nur Sterne, Können startet dann neu). Ausnahme: Alte Codes, deren Prüfzeichen (14. Zeichen) ein L ist (ca. 4 %), lassen sich nicht mehr laden, weil L jetzt als 1 gelesen wird.
 - Reihenfolge der Spiele und Bausteine ist Teil des Formats – neue Spiele oder Bausteine brauchen ein neues Code-Format.
+
+## Was als richtig gilt
+
+- Steht der Begleitsatz **vorne**, sind am Ende der Rede Punkt und Ausrufezeichen beide richtig – in allen Spielen gleich. Ein Fragezeichen bleibt ein Fragezeichen; bei Begleitsatz **hinten** zählt nur das Original.
+- Sprechblasen-Schreiber: Leerzeichen um Satzzeichen sind egal; gerade `"` sowie `,,` und `''` werden als „ und “ erkannt (im Eingabefeld sofort umgewandelt). Wörter sowie Groß- und Kleinschreibung müssen stimmen.
