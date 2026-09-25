@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Sparkles, Star, Award, ArrowRight, RotateCcw, BookOpen, Crown, Zap, HelpCircle, Lock, Settings, Key, Copy, Check, Highlighter, Radar, MessageCircle, Wand2, Search, Puzzle, Brain, Megaphone, CloudRain, Repeat, PenTool, Trophy, Flame, Footprints, Eraser, Eye, Rocket } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, createContext, useContext } from 'react';
+import { Sparkles, Star, Award, ArrowRight, RotateCcw, BookOpen, Crown, Zap, HelpCircle, Lock, Settings, Key, Copy, Check, Highlighter, Radar, MessageCircle, Wand2, Search, Puzzle, Brain, Megaphone, CloudRain, Repeat, PenTool, Trophy, Flame, Footprints, Eraser, Eye, Rocket, Target } from 'lucide-react';
 
 // ==========================================
 // CUSTOM CSS FÜR COMIC-THEMA & ANIMATIONEN
@@ -146,31 +146,32 @@ const mitteData = [
   { who: "Ben", verb: "ruft", a: "Schau mal", b: "da oben fliegt ein Adler!", e: "👦" }
 ];
 
+// skill = Können-Baustein, der mit diesem Satz geprüft wird (siehe SKILLS)
 const fehlerData = [
   // Richtig geschrieben
-  { s: "Anna sagt: „Ich komme gleich.“", ok: true, why: "Begleitsatz vorne → Doppelpunkt. Der Punkt der Rede steht vor dem “." },
-  { s: "„Wo ist mein Heft?“, fragt Luis.", ok: true, why: "Begleitsatz hinten → Komma nach dem “. Das Fragezeichen bleibt stehen." },
-  { s: "„Das ist lecker“, sagt Opa.", ok: true, why: "Begleitsatz hinten → Der Punkt der Rede fällt weg, dafür kommt ein Komma." },
-  { s: "Papa ruft: „Das Essen ist fertig!“", ok: true, why: "Doppelpunkt nach dem Begleitsatz, Ausrufezeichen vor dem “." },
-  { s: "Mama fragt: „Wer hat Hunger?“", ok: true, why: "Doppelpunkt nach dem Begleitsatz, Fragezeichen vor dem “." },
-  { s: "Leon fragt: „Kommst du mit?“", ok: true, why: "Doppelpunkt, Anführungszeichen unten und oben – alles perfekt!" },
-  { s: "„Ich habe gewonnen!“, jubelt Ella.", ok: true, why: "Das Ausrufezeichen bleibt, danach kommen “ und das Komma." },
-  { s: "Oma erzählt: „Früher war alles anders.“", ok: true, why: "Die Rede beginnt groß, der Punkt steht vor dem “." },
+  { s: "Anna sagt: „Ich komme gleich.“", ok: true, skill: 'vorne', why: "Begleitsatz vorne → Doppelpunkt. Der Punkt der Rede steht vor dem “." },
+  { s: "„Wo ist mein Heft?“, fragt Luis.", ok: true, skill: 'hinten', why: "Begleitsatz hinten → Komma nach dem “. Das Fragezeichen bleibt stehen." },
+  { s: "„Das ist lecker“, sagt Opa.", ok: true, skill: 'hinten', why: "Begleitsatz hinten → Der Punkt der Rede fällt weg, dafür kommt ein Komma." },
+  { s: "Papa ruft: „Das Essen ist fertig!“", ok: true, skill: 'vorne', why: "Doppelpunkt nach dem Begleitsatz, Ausrufezeichen vor dem “." },
+  { s: "Mama fragt: „Wer hat Hunger?“", ok: true, skill: 'vorne', why: "Doppelpunkt nach dem Begleitsatz, Fragezeichen vor dem “." },
+  { s: "Leon fragt: „Kommst du mit?“", ok: true, skill: 'vorne', why: "Doppelpunkt, Anführungszeichen unten und oben – alles perfekt!" },
+  { s: "„Ich habe gewonnen!“, jubelt Ella.", ok: true, skill: 'hinten', why: "Das Ausrufezeichen bleibt, danach kommen “ und das Komma." },
+  { s: "Oma erzählt: „Früher war alles anders.“", ok: true, skill: 'vorne', why: "Die Rede beginnt groß, der Punkt steht vor dem “." },
   // Mit Fehler
-  { s: "Anna sagt „Ich komme gleich.“", ok: false, fix: "Anna sagt: „Ich komme gleich.“", why: "Der Doppelpunkt nach dem Begleitsatz fehlt." },
-  { s: "„Das ist lecker.“, sagt Opa.", ok: false, fix: "„Das ist lecker“, sagt Opa.", why: "Steht der Begleitsatz hinten, fällt der Punkt der Rede weg." },
-  { s: "„Wo ist mein Heft?“ fragt Luis.", ok: false, fix: "„Wo ist mein Heft?“, fragt Luis.", why: "Nach dem Schluss-Anführungszeichen fehlt das Komma." },
-  { s: "Papa ruft: „Das Essen ist fertig“!", ok: false, fix: "Papa ruft: „Das Essen ist fertig!“", why: "Das Ausrufezeichen gehört zur Rede – es steht vor dem “." },
-  { s: "„Ich bin müde“, Gähnt Tim.", ok: false, fix: "„Ich bin müde“, gähnt Tim.", why: "Der Begleitsatz hinten beginnt mit einem kleinen Buchstaben." },
-  { s: "Leon fragt: Kommst du mit?", ok: false, fix: "Leon fragt: „Kommst du mit?“", why: "Die Anführungszeichen fehlen." },
-  { s: "Mia flüstert: „Ich habe ein Geheimnis.", ok: false, fix: "Mia flüstert: „Ich habe ein Geheimnis.“", why: "Das Schluss-Anführungszeichen oben fehlt." },
-  { s: "„Hilfe!“, ruft Ben", ok: false, fix: "„Hilfe!“, ruft Ben.", why: "Am Ende des Begleitsatzes fehlt der Punkt." },
-  { s: "Tim ruft: „Komm schnell!“.", ok: false, fix: "Tim ruft: „Komm schnell!“", why: "Nach dem “ kommt kein Punkt mehr – das Ausrufezeichen beendet den Satz schon." },
-  { s: "Lisa fragt, „Spielst du mit?“", ok: false, fix: "Lisa fragt: „Spielst du mit?“", why: "Nach dem Begleitsatz vorne steht ein Doppelpunkt, kein Komma." },
-  { s: "Opa erzählt: „früher war alles anders.“", ok: false, fix: "Opa erzählt: „Früher war alles anders.“", why: "Die wörtliche Rede beginnt mit einem großen Buchstaben." },
-  { s: "„Ich komme gleich,“ sagt Anna.", ok: false, fix: "„Ich komme gleich“, sagt Anna.", why: "Das Komma steht erst nach dem Schluss-Anführungszeichen." },
-  { s: "„Wie spät ist es“?, fragt Tim.", ok: false, fix: "„Wie spät ist es?“, fragt Tim.", why: "Das Fragezeichen gehört zur Rede – es steht vor dem “." },
-  { s: "Paul ruft: “Komm her!„", ok: false, fix: "Paul ruft: „Komm her!“", why: "Am Anfang stehen die Anführungszeichen unten („), am Ende oben (“)." }
+  { s: "Anna sagt „Ich komme gleich.“", ok: false, skill: 'vorne', fix: "Anna sagt: „Ich komme gleich.“", why: "Der Doppelpunkt nach dem Begleitsatz fehlt." },
+  { s: "„Das ist lecker.“, sagt Opa.", ok: false, skill: 'hinten', fix: "„Das ist lecker“, sagt Opa.", why: "Steht der Begleitsatz hinten, fällt der Punkt der Rede weg." },
+  { s: "„Wo ist mein Heft?“ fragt Luis.", ok: false, skill: 'hinten', fix: "„Wo ist mein Heft?“, fragt Luis.", why: "Nach dem Schluss-Anführungszeichen fehlt das Komma." },
+  { s: "Papa ruft: „Das Essen ist fertig“!", ok: false, skill: 'redezeichen', fix: "Papa ruft: „Das Essen ist fertig!“", why: "Das Ausrufezeichen gehört zur Rede – es steht vor dem “." },
+  { s: "„Ich bin müde“, Gähnt Tim.", ok: false, skill: 'gross', fix: "„Ich bin müde“, gähnt Tim.", why: "Der Begleitsatz hinten beginnt mit einem kleinen Buchstaben." },
+  { s: "Leon fragt: Kommst du mit?", ok: false, skill: 'anfuehrung', fix: "Leon fragt: „Kommst du mit?“", why: "Die Anführungszeichen fehlen." },
+  { s: "Mia flüstert: „Ich habe ein Geheimnis.", ok: false, skill: 'anfuehrung', fix: "Mia flüstert: „Ich habe ein Geheimnis.“", why: "Das Schluss-Anführungszeichen oben fehlt." },
+  { s: "„Hilfe!“, ruft Ben", ok: false, skill: 'hinten', fix: "„Hilfe!“, ruft Ben.", why: "Am Ende des Begleitsatzes fehlt der Punkt." },
+  { s: "Tim ruft: „Komm schnell!“.", ok: false, skill: 'redezeichen', fix: "Tim ruft: „Komm schnell!“", why: "Nach dem “ kommt kein Punkt mehr – das Ausrufezeichen beendet den Satz schon." },
+  { s: "Lisa fragt, „Spielst du mit?“", ok: false, skill: 'vorne', fix: "Lisa fragt: „Spielst du mit?“", why: "Nach dem Begleitsatz vorne steht ein Doppelpunkt, kein Komma." },
+  { s: "Opa erzählt: „früher war alles anders.“", ok: false, skill: 'gross', fix: "Opa erzählt: „Früher war alles anders.“", why: "Die wörtliche Rede beginnt mit einem großen Buchstaben." },
+  { s: "„Ich komme gleich,“ sagt Anna.", ok: false, skill: 'hinten', fix: "„Ich komme gleich“, sagt Anna.", why: "Das Komma steht erst nach dem Schluss-Anführungszeichen." },
+  { s: "„Wie spät ist es“?, fragt Tim.", ok: false, skill: 'redezeichen', fix: "„Wie spät ist es?“, fragt Tim.", why: "Das Fragezeichen gehört zur Rede – es steht vor dem “." },
+  { s: "Paul ruft: “Komm her!„", ok: false, skill: 'anfuehrung', fix: "Paul ruft: „Komm her!“", why: "Am Anfang stehen die Anführungszeichen unten („), am Ende oben (“)." }
 ];
 
 const redeverbData = [
@@ -325,8 +326,29 @@ function finalizeSeq(seq) {
     s.accept = [s.answer];
     // Am Ende einer Rede (Begleitsatz vorne/Mitte) passen Punkt und Ausrufezeichen beide.
     if ((s.answer === '.' || s.answer === '!') && next === '“' && after !== ',') s.accept = ['.', '!'];
+    // Können-Baustein, der mit diesem Kästchen geprüft wird
+    const prev = slots[i - 1]?.answer;
+    if (s.answer === '„' || s.answer === '“') s.skill = 'anfuehrung';
+    else if (s.answer === ':') s.skill = 'vorne';
+    else if (s.answer === ',') s.skill = 'hinten';
+    else if (s.answer === '.' && prev === ',') s.skill = 'hinten';
+    else if (['.', '?', '!'].includes(s.answer) && next === '“') s.skill = 'redezeichen';
+    else s.skill = null;
   });
   return seq;
+}
+
+// Wertet beim ersten vollständigen Prüfen jedes Kästchen mit Baustein aus.
+// Anführungszeichen zählen pro Rede nur einmal: richtig, wenn „ und “ beide stimmen.
+function trackSlots(seq, status, track) {
+  let openOk = null;
+  seq.forEach(p => {
+    if (p.type !== 'slot' || !p.skill) return;
+    const right = status[p.idx] === 'correct';
+    if (p.answer === '„') { openOk = right; return; }
+    if (p.answer === '“' && openOk !== null) { track('anfuehrung', openOk && right); openOk = null; return; }
+    track(p.skill, right);
+  });
 }
 
 function tokensToSeq(tokens) {
@@ -404,6 +426,29 @@ function diagnoseAnswer(user, solution, mode) {
   return "Fast! Vergleiche jedes Satzzeichen noch einmal ganz genau.";
 }
 
+// Gibt { skillId: true/false } für die in diesem Satz prüfbaren Bausteine zurück,
+// oder null, wenn die Wörter nicht stimmen (dann keine Aussage möglich).
+function diagnoseSkills(user, solution, mode) {
+  const u = normalizeAnswer(user), s = normalizeAnswer(solution);
+  const lettersLower = x => x.replace(/[^A-Za-zÄÖÜäöüß]/g, '').toLowerCase();
+  const lettersCase = x => x.replace(/[^A-Za-zÄÖÜäöüß]/g, '');
+  if (lettersLower(u) !== lettersLower(s)) return null;
+  const count = (str, ch) => str.split(ch).length - 1;
+  const r = {};
+  r.anfuehrung = count(u, '<') === 1 && count(u, '>') === 1 && u.indexOf('<') < u.indexOf('>');
+  if (mode === 'vorne') {
+    r.vorne = u.includes(':<');
+    r.redezeichen = /[.?!]>$/.test(u);
+  }
+  if (mode === 'hinten') {
+    r.hinten = u.includes('>,') && !/\.>/.test(u) && u.endsWith('.');
+    const m = s.match(/([?!])>/); // nur wenn die Rede ? oder ! hat
+    if (m) r.redezeichen = u.includes(m[1] + '>');
+  }
+  r.gross = lettersCase(u) === lettersCase(s);
+  return r;
+}
+
 const getRandomErrorFeedback = () => {
   const msgs = ["Fast richtig! Probier es noch mal! 💪", "Nicht ganz! Versuch es gleich nochmal! 💬", "Knapp daneben! Du schaffst das! 🦸", "Das war es nicht ganz, gleich hast du es! ✨", "Ups! Schau noch mal genau hin! 🔍"];
   return msgs[Math.floor(Math.random() * msgs.length)];
@@ -446,6 +491,11 @@ function useFeedback() {
 
   return { msg, type, showFeedback, clearFeedback };
 }
+
+// „Das kann ich schon“: Die Spiele melden Ergebnisse über diesen Context an die App.
+// Grundregel: Es zählt nur der erste Versuch pro Aufgabe. Das Profi-Labor wird nicht ausgewertet.
+const SkillContext = createContext({ track: () => {} });
+const useTrack = () => useContext(SkillContext).track;
 
 // Richtig/Falsch-Rückmeldung + Tipp nach 3 Fehlern in Folge
 function useGameFeedback(onShowTip) {
@@ -642,14 +692,14 @@ function useSlots(seq) {
     setStatus(st => { const n = [...st]; n[selected] = null; return n; });
   };
 
-  // Gibt die Anzahl falscher Kästchen zurück (-1 = noch nicht alle ausgefüllt)
+  // Gibt { wrong, status } zurück: wrong = Anzahl falscher Kästchen (-1 = noch nicht alle ausgefüllt)
   const check = () => {
-    if (filled.some(f => !f)) return -1;
+    if (filled.some(f => !f)) return { wrong: -1, status };
     const newStatus = slots.map(s => (s.accept.includes(filled[s.idx]) ? 'correct' : 'wrong'));
     setStatus(newStatus);
     const firstWrong = newStatus.indexOf('wrong');
     setSelected(firstWrong >= 0 ? firstWrong : null);
-    return newStatus.filter(x => x === 'wrong').length;
+    return { wrong: newStatus.filter(x => x === 'wrong').length, status: newStatus };
   };
 
   return { filled, status, selected, selectSlot, placeSign, erase, check, count, filledCount: filled.filter(Boolean).length };
@@ -811,6 +861,132 @@ function ContextTipModal({ message, onClose }) {
   );
 }
 
+// Regel-Beispiel mit Farbcodierung: Rede gelb, Zeichen pink
+function RuleText({ text }) {
+  const sign = (c, k) => <span key={k} className="text-pink-400 font-black">{c}</span>;
+  return (
+    <span className="font-serif">
+      {text.split(/(„[A-ZÄÖÜ][^„“]*“)/).map((part, i) => {
+        if (/^„[A-ZÄÖÜ]/.test(part) && part.endsWith('“')) {
+          const inner = part.slice(1, -1).split(/([.?!])$/);
+          return (
+            <span key={i}>{sign('„', 'a')}<span className="text-yellow-200">{inner[0]}</span>{inner[1] && sign(inner[1], 'e')}{sign('“', 'b')}</span>
+          );
+        }
+        return (
+          <span key={i}>
+            {part.split(/([„“]|^,|:(?= „))/).map((p, j) => (/^([„“,:])$/.test(p) ? sign(p, j) : <React.Fragment key={j}>{p}</React.Fragment>))}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
+// Übungen, die einen Baustein trainieren und für die Auswertung zählen (Memory und Profi zählen nicht)
+const gamesForSkill = (skillId) => gameOrder.filter(id =>
+  id !== 'memory' && id !== 'profi' && (GAME_SKILLS[id] || []).includes(skillId)
+);
+
+// „Das kann ich schon“: Übersicht, welche Regeln schon sicher sitzen.
+// focusGame gesetzt  → nur die Bausteine dieser Übung (Knopf in der Übung / auf dem Ergebnis-Bildschirm)
+// focusGame = null   → alle Bausteine mit den Übungen, in denen sie trainiert werden (Knopf oben in der Leiste)
+function SkillModal({ onClose, skillLog, focusGame, getLockState, gameProgress, onStartGame }) {
+  const shownSkills = focusGame ? SKILLS.filter(s => (GAME_SKILLS[focusGame] || []).includes(s.id)) : SKILLS;
+  const nothingYet = shownSkills.every(s => !(skillLog[s.id]?.window?.length));
+
+  // Empfohlene Übung: erste freigeschaltete – in einer Übung nie die, in der man gerade ist
+  const practiceGame = (skillId) => gamesForSkill(skillId).find(id => id !== focusGame && !getLockState(id));
+
+  const SkillRow = ({ skill }) => {
+    const entry = skillLog[skill.id];
+    const level = skillLevel(entry);
+    const ui = SKILL_LEVEL_UI[level];
+    const practice = (level === 1 || level === 2) ? practiceGame(skill.id) : null;
+    let stats = null;
+    if (entry?.total > 0) stats = `Heute: ${entry.ok} von ${entry.total} beim ersten Versuch richtig`;
+    else if (entry?.window?.length > 0) stats = 'Aus dem Helden-Code übernommen';
+    return (
+      <div className="bg-indigo-900/50 p-4 rounded-2xl border-2 border-indigo-500/30 flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex-1 text-left">
+            <h4 className="font-black text-slate-100 text-lg leading-tight">{skill.title}</h4>
+            <p className="text-slate-300 text-base mt-1"><RuleText text={skill.rule} /></p>
+            {practice && focusGame && <p className="text-pink-200 text-sm font-bold mt-1">Übe auch in: {gameById(practice).title}</p>}
+            {stats && <p className="text-slate-500 text-xs mt-1">{stats}</p>}
+          </div>
+          <span className={`self-start sm:self-center whitespace-nowrap font-black text-sm px-3 py-2 rounded-full border-2 ${ui.cls}`}>{ui.label}</span>
+        </div>
+
+        {!focusGame && (
+          <div className="flex flex-wrap items-center gap-2 text-left">
+            <span className="text-slate-400 text-xs font-bold uppercase tracking-wider mr-1">{practice ? 'Übe in:' : 'Trainierst du in:'}</span>
+            {gamesForSkill(skill.id).map(id => {
+              const g = gameById(id);
+              const locked = !!getLockState(id);
+              const isTip = id === practice;
+              const score = gameProgress[id]?.score || 0;
+              return (
+                <button
+                  key={id}
+                  disabled={locked}
+                  onClick={() => onStartGame(id)}
+                  title={locked ? getLockState(id) : `${g.title} starten`}
+                  className={`flex items-center gap-1.5 text-xs md:text-sm font-bold px-3 py-1.5 rounded-full border-2 transition-all ${locked ? 'border-slate-700 bg-slate-900/60 text-slate-600 cursor-not-allowed' : isTip ? 'border-pink-400 bg-pink-500/20 text-pink-100 shadow-[0_0_12px_rgba(244,114,182,0.5)] hover:bg-pink-500/30 active:scale-95' : 'border-indigo-400/50 bg-slate-900/70 text-slate-200 hover:border-yellow-300 active:scale-95'}`}
+                >
+                  {locked ? <Lock className="w-3 h-3" /> : <g.icon className="w-4 h-4" />}
+                  {gameOrder.indexOf(id) + 1}. {g.title}
+                  {score > 0 && !locked && <span className="text-yellow-300 flex items-center gap-0.5"><Star className="w-3 h-3 fill-yellow-300" />{score}</span>}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[150] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+      <div className="bg-slate-900 border-4 border-pink-400 rounded-3xl max-w-3xl w-full p-6 md:p-8 shadow-[0_0_50px_rgba(244,114,182,0.3)] anim-pop relative flex flex-col max-h-[92vh]">
+        <div className="flex justify-between items-start gap-4 mb-2">
+          <h3 className="text-3xl md:text-5xl font-comic text-pink-300 flex items-center gap-3 drop-shadow-md">
+            <Target className="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 anim-float" /> Das kann ich schon:
+          </h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-full p-2 transition-colors">✕</button>
+        </div>
+        {focusGame ? (
+          <p className="text-slate-300 mb-5">Das trainierst du in der Übung <b className="text-yellow-300">„{gameById(focusGame).title}“</b>:</p>
+        ) : (
+          <p className="text-slate-300 mb-5">Hier siehst du alle Regeln: was du schon gut kannst, was du noch üben kannst – und in welchen Übungen du sie trainierst.</p>
+        )}
+
+        <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar flex flex-col gap-3">
+          {focusGame === 'profi' ? (
+            <div className="bg-lime-900/30 border-2 border-dashed border-lime-400/60 p-4 rounded-2xl text-center text-lime-200 font-bold">
+              Das Profi-Labor ist ein Bonus und zählt nicht zur Auswertung.
+            </div>
+          ) : (
+            <>
+              {nothingYet && (
+                <div className="bg-yellow-400/10 border-2 border-yellow-400/40 p-4 rounded-2xl text-center text-yellow-200 font-bold">
+                  Spiele ein paar Übungen – dann siehst du hier, was du schon kannst! 🦸
+                </div>
+              )}
+              {focusGame === 'memory' && (
+                <div className="bg-slate-800/80 border-2 border-slate-600 p-3 rounded-2xl text-center text-slate-300 text-sm">
+                  Im Memory wird nicht gezählt. Deine Einstufung kommt aus „Das treffende Wort“ und „Wörter-Regen“.
+                </div>
+              )}
+              {shownSkills.map(s => <SkillRow key={s.id} skill={s} />)}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function HelpModal({ onClose }) {
   return (
     <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[150] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
@@ -833,6 +1009,7 @@ function HelpModal({ onClose }) {
               </div>
             ))}
           </div>
+          <div className="bg-slate-800/80 p-4 rounded-xl border border-pink-500/40 mt-4 text-slate-200 text-sm">🎯 <b className="text-pink-300">Das kann ich schon:</b> Hier siehst du, welche Regeln du schon sicher kannst und was du noch üben solltest.</div>
           <p className="text-slate-400 text-sm mt-6 text-center">In jedem Spiel kannst du 10 Sterne sammeln. Mit 9 Sternen schaltest du das nächste Spiel im Pfad frei. Mit 10 Sternen bekommst du ein Helden-Abzeichen!</p>
         </div>
       </div>
@@ -941,6 +1118,8 @@ function MarkerRound({ item, fb, onNext }) {
   const [mistakes, setMistakes] = useState(0);
   const [wrongFlash, setWrongFlash] = useState([]);
   const painting = useRef(false);
+  const track = useTrack();
+  const tracked = useRef(false);
 
   useEffect(() => {
     const stop = () => { painting.current = false; };
@@ -976,6 +1155,7 @@ function MarkerRound({ item, fb, onNext }) {
   const check = () => {
     if (marks.some(m => !m)) { fb.info("Markiere zuerst alle Wörter! 🖍️"); return; }
     const wrong = words.map((w, i) => (marks[i] !== w.kind ? i : null)).filter(x => x !== null);
+    if (!tracked.current) { tracked.current = true; track('erkennen', wrong.length === 0); }
     if (wrong.length === 0) {
       fb.good();
       setSolved(true);
@@ -1033,10 +1213,12 @@ function SortGame({ onFinish, onShowTip }) {
   const [wrongGuesses, setWrongGuesses] = useState([]);
   const [solved, setSolved] = useState(false);
   const fb = useGameFeedback(onShowTip);
+  const track = useTrack();
   const item = items[idx];
 
   const handleSort = (mode) => {
     if (solved || wrongGuesses.includes(mode)) return;
+    if (wrongGuesses.length === 0) track('erkennen', mode === item.mode);
     if (mode === item.mode) {
       fb.good(null, 1500);
       const s = score + (wrongGuesses.length === 0 ? 1 : 0);
@@ -1093,27 +1275,28 @@ function comicOptions(item, mode) {
   const { body, end } = splitEnd(item.say);
   const front = `${cap(item.who)} ${item.verb}`;
   const back = `${item.verb} ${item.who}`;
+  // Jede falsche Option trägt den Können-Baustein, gegen den sie verstößt
   let wrongs;
   let must = null;
   if (mode === 'vorne') {
     wrongs = [
-      `${front} „${body}${end}“`,
-      `${front}: „${body}“${end}`,
-      `${front}, „${body}${end}“`,
-      `${front}: ${body}${end}`
+      { text: `${front} „${body}${end}“`, skill: 'vorne' },
+      { text: `${front}: „${body}“${end}`, skill: 'redezeichen' },
+      { text: `${front}, „${body}${end}“`, skill: 'vorne' },
+      { text: `${front}: ${body}${end}`, skill: 'anfuehrung' }
     ];
   } else {
     const e2 = end === '.' ? '' : end;
     wrongs = [
-      `„${body}${e2}“ ${back}.`,
-      `„${body}${e2}“, ${cap(back)}.`,
-      `„${body}${e2},“ ${back}.`,
-      `„${body}${e2}“: ${back}.`
+      { text: `„${body}${e2}“ ${back}.`, skill: 'hinten' },
+      { text: `„${body}${e2}“, ${cap(back)}.`, skill: 'gross' },
+      { text: `„${body}${e2},“ ${back}.`, skill: 'hinten' },
+      { text: `„${body}${e2}“: ${back}.`, skill: 'hinten' }
     ];
-    if (end === '.') must = `„${body}.“, ${back}.`;
+    if (end === '.') must = { text: `„${body}.“, ${back}.`, skill: 'hinten' };
   }
   const picked = must ? [must, shuffleArray(wrongs)[0]] : shuffleArray(wrongs).slice(0, 2);
-  return shuffleArray([{ text: correct, ok: true }, ...picked.map(t => ({ text: t, ok: false }))]);
+  return shuffleArray([{ text: correct, ok: true, skill: null }, ...picked.map(w => ({ ...w, ok: false }))]);
 }
 
 function ComicGame({ onFinish, onShowTip }) {
@@ -1126,10 +1309,15 @@ function ComicGame({ onFinish, onShowTip }) {
   const [wrongPicks, setWrongPicks] = useState([]);
   const [solved, setSolved] = useState(false);
   const fb = useGameFeedback(onShowTip);
+  const track = useTrack();
   const item = items[idx];
 
   const pick = (i) => {
     if (solved || wrongPicks.includes(i)) return;
+    if (wrongPicks.length === 0) {
+      if (item.options[i].ok) track(item.mode, true);
+      else track(item.options[i].skill, false);
+    }
     if (item.options[i].ok) {
       fb.good();
       setSolved(true);
@@ -1210,10 +1398,13 @@ function ZeichenRound({ item, fb, onNext }) {
   const slots = useSlots(item.seq);
   const [mistakes, setMistakes] = useState(0);
   const [solved, setSolved] = useState(false);
+  const track = useTrack();
+  const tracked = useRef(false);
 
   const check = () => {
-    const wrong = slots.check();
+    const { wrong, status } = slots.check();
     if (wrong < 0) { fb.info("Fülle zuerst alle Kästchen aus! ✏️"); return; }
+    if (!tracked.current) { tracked.current = true; trackSlots(item.seq, status, track); }
     if (wrong === 0) { fb.good(); setSolved(true); }
     else {
       fb.bad("Vorne: Doppelpunkt. Hinten: Komma nach dem “ und Punkt am Ende. Das Satzzeichen der Rede (. ? !) steht immer vor dem “.", `${wrong} ${wrong === 1 ? 'Zeichen ist' : 'Zeichen sind'} noch falsch – schau auf die roten Kästchen!`);
@@ -1252,11 +1443,13 @@ function FehlerGame({ onFinish, onShowTip }) {
   const [score, setScore] = useState(0);
   const [answer, setAnswer] = useState(null);
   const fb = useGameFeedback(onShowTip);
+  const track = useTrack();
   const item = items[idx];
 
   const choose = (saysOk) => {
     if (answer !== null) return;
     const right = saysOk === item.ok;
+    track(item.skill, right);
     setAnswer(right);
     if (right) { fb.good(); setScore(s => s + 1); }
     else fb.bad("Gehe wie ein Detektiv vor: 1. Anführungszeichen unten und oben? 2. Doppelpunkt oder Komma? 3. Satzzeichen der Rede vor dem “? 4. Groß- und Kleinschreibung?");
@@ -1320,6 +1513,7 @@ function PuzzleGame({ onFinish, onShowTip }) {
         key={idx}
         target={items[idx].tokens}
         extra={[]}
+        mode={items[idx].mode}
         header={<div className="flex justify-center mb-6"><span className="bg-orange-900/40 border-2 border-orange-500/40 text-orange-200 font-bold px-4 py-2 rounded-full flex items-center gap-3 flex-wrap justify-center">Begleitsatz {MODE_LABEL[items[idx].mode]}: <Blueprint mode={items[idx].mode} small /></span></div>}
         tip="Schau auf den Bauplan! Die Rede wird von „ und “ eingerahmt. Das Satzzeichen der Rede steht vor dem “."
         explain={MODE_EXPLAIN[items[idx].mode]}
@@ -1331,12 +1525,15 @@ function PuzzleGame({ onFinish, onShowTip }) {
   );
 }
 
-function BuildRound({ target, extra, header, tip, explain, fb, onNext, color = "bg-orange-500 hover:bg-orange-400" }) {
+// mode: 'vorne' / 'hinten' = wird für „Das kann ich schon“ ausgewertet, 'mitte' (Profi) = nicht
+function BuildRound({ target, extra, mode, header, tip, explain, fb, onNext, color = "bg-orange-500 hover:bg-orange-400" }) {
   const [pool, setPool] = useState(() => shuffleArray([...target, ...extra].map((t, i) => ({ id: i, t: t.t }))));
   const [answer, setAnswer] = useState([]);
   const [wrong, setWrong] = useState(false);
   const [solved, setSolved] = useState(false);
   const [mistakes, setMistakes] = useState(0);
+  const track = useTrack();
+  const tracked = useRef(false);
 
   const pickTok = (id) => {
     if (solved) return;
@@ -1355,6 +1552,14 @@ function BuildRound({ target, extra, header, tip, explain, fb, onNext, color = "
 
   const check = () => {
     const ok = answer.length === target.length && answer.every((tok, i) => tok.t === target[i].t);
+    // Erster Prüf-Klick zählt – auch bei falscher Bausteinzahl, solange alle Wörter drin sind
+    if (!tracked.current) {
+      tracked.current = true;
+      if (mode === 'vorne' || mode === 'hinten') {
+        const r = diagnoseSkills(joinTokens(answer), joinTokens(target), mode);
+        if (r) Object.entries(r).forEach(([skill, val]) => track(skill, val));
+      }
+    }
     if (ok) { fb.good(); setSolved(true); }
     else {
       fb.bad(tip);
@@ -1484,11 +1689,13 @@ function RedeverbGame({ onFinish, onShowTip }) {
   const [wrongPicks, setWrongPicks] = useState([]);
   const [solved, setSolved] = useState(false);
   const fb = useGameFeedback(onShowTip);
+  const track = useTrack();
   const item = items[idx];
   const [before, after] = item.s.split('___');
 
   const pick = (opt) => {
     if (solved || wrongPicks.includes(opt)) return;
+    if (wrongPicks.length === 0) track('redeverb', opt === item.correct);
     if (opt === item.correct) {
       fb.good(null, 1500);
       setSolved(true);
@@ -1555,6 +1762,7 @@ function RegenGame({ onFinish }) {
   const scoreRef = useRef(0);
   const dropRef = useRef(0);
   const timeoutRef = useRef(null);
+  const track = useTrack();
 
   useEffect(() => () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); }, []);
 
@@ -1569,6 +1777,8 @@ function RegenGame({ onFinish }) {
   const resolve = (gate) => {
     setPhase('paused');
     const isCorrect = gate !== 'none' && (gate === 'say') === words[idx].say;
+    // Jede Entscheidung zählt; ein heruntergefallenes Wort ohne Klick ist keine Entscheidung
+    if (gate !== 'none') track('redeverb', isCorrect);
     if (isCorrect) {
       scoreRef.current += 1;
       setScore(scoreRef.current);
@@ -1689,6 +1899,7 @@ function UmstellGame({ onFinish, onShowTip }) {
         key={idx}
         target={item.target}
         extra={item.extra}
+        mode={item.to}
         color="bg-lime-600 hover:bg-lime-500"
         header={(
           <div className="flex flex-col items-center gap-3 mb-6">
@@ -1741,6 +1952,7 @@ function SchreibRound({ item, fb, onNext }) {
   const [solved, setSolved] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const inputRef = useRef(null);
+  const track = useTrack();
 
   // Gerade Anführungszeichen automatisch in „ und “ verwandeln
   const smartQuotes = (value) => {
@@ -1769,6 +1981,10 @@ function SchreibRound({ item, fb, onNext }) {
 
   const check = () => {
     if (solved || !text.trim()) return;
+    if (tries === 0) {
+      const r = diagnoseSkills(text, item.solution, item.mode);
+      if (r) Object.entries(r).forEach(([skill, val]) => track(skill, val));
+    }
     if (normalizeAnswer(text) === normalizeAnswer(item.solution)) {
       fb.good();
       setSolved(true);
@@ -1838,10 +2054,13 @@ function FinaleGame({ onFinish, onShowTip }) {
   const [mistakes, setMistakes] = useState(0);
   const [solved, setSolved] = useState(false);
   const fb = useGameFeedback(onShowTip);
+  const track = useTrack();
+  const tracked = useRef(false);
 
   const check = () => {
-    const wrong = slots.check();
+    const { wrong, status } = slots.check();
     if (wrong < 0) { fb.info("Fülle zuerst alle Kästchen aus! ✏️"); return; }
+    if (!tracked.current) { tracked.current = true; trackSlots(story.seq, status, track); }
     if (wrong === 0) { fb.good(null, 3000); setSolved(true); }
     else {
       fb.bad("Nimm dir Satz für Satz vor: Steht der Begleitsatz vorne oder hinten? Dann weißt du, ob Doppelpunkt oder Komma kommt.", `${wrong} ${wrong === 1 ? 'Zeichen ist' : 'Zeichen sind'} noch falsch – die grünen bleiben stehen!`);
@@ -1913,7 +2132,7 @@ function ProfiGame({ onFinish, onShowTip }) {
       {item.kind === 'zeichen' ? (
         <ProfiZeichenRound key={idx} item={item} fb={fb} tip={tip} onNext={next} />
       ) : (
-        <BuildRound key={idx} target={item.tokens} extra={[]} color="bg-lime-600 hover:bg-lime-500" tip={tip} explain={MODE_EXPLAIN.mitte} fb={fb} onNext={next} />
+        <BuildRound key={idx} target={item.tokens} extra={[]} mode="mitte" color="bg-lime-600 hover:bg-lime-500" tip={tip} explain={MODE_EXPLAIN.mitte} fb={fb} onNext={next} />
       )}
       <ImmediateFeedback msg={fb.msg} type={fb.type} />
     </div>
@@ -1925,8 +2144,9 @@ function ProfiZeichenRound({ item, fb, tip, onNext }) {
   const [mistakes, setMistakes] = useState(0);
   const [solved, setSolved] = useState(false);
 
+  // Profi-Labor wird für „Das kann ich schon“ nicht ausgewertet
   const check = () => {
-    const wrong = slots.check();
+    const { wrong } = slots.check();
     if (wrong < 0) { fb.info("Fülle zuerst alle Kästchen aus! ✏️"); return; }
     if (wrong === 0) { fb.good(); setSolved(true); }
     else { fb.bad(tip, `${wrong} ${wrong === 1 ? 'Zeichen ist' : 'Zeichen sind'} noch falsch – schau auf die roten Kästchen!`); setMistakes(m => m + 1); }
@@ -1980,6 +2200,64 @@ const PATHS = [
   { title: 'Pfad 4: Umbauen & Schreiben', icon: PenTool, color: 'text-lime-300', box: 'bg-lime-900/20 border-lime-500/30', arrow: 'text-lime-500/50', games: ['umstellen', 'sprechblase', 'finale'] }
 ];
 
+// ==========================================
+// „MEIN KÖNNEN“: Können-Bausteine & Einstufung
+// ==========================================
+// ACHTUNG: Reihenfolge ist Teil des Helden-Codes – nie umsortieren, nur hinten anhängen erfordert neues Code-Format!
+const SKILLS = [
+  { id: 'erkennen',    title: 'Rede und Begleitsatz erkennen',     rule: 'Was wird gesagt? Wer spricht?' },
+  { id: 'anfuehrung',  title: 'Anführungszeichen unten und oben',  rule: 'Am Anfang unten „, am Ende oben “.' },
+  { id: 'vorne',       title: 'Begleitsatz vorne → Doppelpunkt',   rule: 'Mia ruft: „Komm her!“' },
+  { id: 'hinten',      title: 'Begleitsatz hinten → Komma',        rule: '„Komm her“, ruft Mia. Der Punkt der Rede fällt weg.' },
+  { id: 'redezeichen', title: 'Satzzeichen der Rede vor dem “',    rule: '. ? ! stehen vor dem Anführungszeichen oben.' },
+  { id: 'gross',       title: 'Groß und klein',                    rule: 'Die Rede beginnt groß, der Begleitsatz hinten klein.' },
+  { id: 'redeverb',    title: 'Treffende Redeverben',              rule: 'Nicht immer nur „sagt“: flüstert, ruft, fragt …' }
+];
+
+// Welche Bausteine in welchem Spiel trainiert werden (nur für die Anzeige im Spiel)
+const GAME_SKILLS = {
+  marker: ['erkennen'], sortieren: ['erkennen'],
+  comic: ['vorne', 'hinten', 'anfuehrung', 'redezeichen', 'gross'],
+  zeichen: ['anfuehrung', 'vorne', 'hinten', 'redezeichen'],
+  fehler: ['anfuehrung', 'vorne', 'hinten', 'redezeichen', 'gross'],
+  puzzle: ['anfuehrung', 'vorne', 'hinten', 'redezeichen', 'gross'],
+  memory: ['redeverb'], redeverb: ['redeverb'], regen: ['redeverb'],
+  umstellen: ['vorne', 'hinten', 'anfuehrung', 'redezeichen', 'gross'],
+  sprechblase: ['anfuehrung', 'vorne', 'hinten', 'redezeichen', 'gross'],
+  finale: ['anfuehrung', 'vorne', 'hinten', 'redezeichen'],
+  profi: []
+};
+
+// Stufe 0–3 aus den letzten bis zu 10 Ergebnissen eines Bausteins:
+// unter 4 Ergebnisse → 0; ab 90 % → 3 „Kann ich!“ (fehlerfrei, bei 10 Ergebnissen 1 Fehler erlaubt);
+// ab 70 % → 2 „Fast!“; sonst → 1 „Übe ich noch“. Bei 4 Ergebnissen: 4 = Kann ich, 3 = Fast, 0–2 = Übe ich noch.
+const skillLevel = (entry) => {
+  const win = entry?.window || [];
+  if (win.length < 4) return 0;
+  const quote = win.filter(Boolean).length / win.length;
+  if (quote >= 0.9) return 3;
+  if (quote >= 0.7) return 2;
+  return 1;
+};
+
+const SKILL_LEVEL_UI = {
+  3: { label: '💪 Kann ich!', cls: 'bg-lime-400/20 text-lime-300 border-lime-400/60' },
+  2: { label: '🙂 Fast!', cls: 'bg-yellow-400/20 text-yellow-300 border-yellow-400/60' },
+  1: { label: '🎯 Übe ich noch', cls: 'bg-pink-400/20 text-pink-300 border-pink-400/60' },
+  0: { label: '🔍 Noch zu wenig Aufgaben', cls: 'bg-slate-700/40 text-slate-400 border-slate-600' }
+};
+
+// Startwerte, wenn eine Stufe aus dem Helden-Code geladen wird (echte Zählung bleibt 0)
+const START_WINDOWS = { 3: [true, true, true, true], 2: [true, true, true, false], 1: [true, false, false, false], 0: [] };
+const skillLogFromLevels = (levels) => {
+  const log = {};
+  SKILLS.forEach(s => {
+    const lvl = levels[s.id] || 0;
+    if (lvl > 0) log[s.id] = { window: [...START_WINDOWS[lvl]], ok: 0, total: 0 };
+  });
+  return log;
+};
+
 // Welches Spiel muss vorher mit 9 Sternen geschafft sein?
 const UNLOCK_REQ = { sortieren: 'marker', comic: 'sortieren', fehler: 'zeichen', puzzle: 'fehler', redeverb: 'memory', regen: 'redeverb', umstellen: 'zeichen', sprechblase: 'umstellen', finale: 'sprechblase', profi: 'zeichen' };
 const BASICS = ['marker', 'zeichen', 'memory'];
@@ -1991,6 +2269,28 @@ const ADMIN_PASSWORD = "Rede123";
 // ==========================================
 // SPEICHERN & LADEN (Helden-Code)
 // ==========================================
+// Die Reihenfolge von `gameOrder` und `SKILLS` ist Teil des Code-Formats.
+// Neue Spiele oder Bausteine brauchen ein neues Format (andere Länge) – alte Formate weiter unterstützen!
+//
+// Aktuelles Format (13 Zeichen, XXXX-XXXX-XXXXX): 13 Spiele à 0–10 Sterne + 7 Bausteine à Stufe 0–3,
+// als Zahl in 12 Base-32-Ziffern + 1 Prüfzeichen.
+// Altes Format (16 Zeichen, XXXX-XXXX-XXXX-XXXX): nur Sterne – wird weiter gelesen (Bausteine dann Stufe 0).
+const CODE32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+const CODE_MAX = (11n ** 13n) * (4n ** 7n);
+
+const code32Check = (digits) => CODE32[digits.reduce((acc, v, i) => acc + v * (i + 1), 0) % 31];
+
+const generateCode = (gameProgress, skillLevels) => {
+  let n = 0n;
+  for (const g of gameOrder) n = n * 11n + BigInt(Math.min(10, Math.max(0, gameProgress[g]?.score || 0)));
+  for (const s of SKILLS) n = n * 4n + BigInt(Math.min(3, Math.max(0, skillLevels[s.id] || 0)));
+  const digits = [];
+  for (let i = 0; i < 12; i++) { digits.unshift(Number(n % 32n)); n /= 32n; }
+  const code = digits.map(v => CODE32[v]).join('') + code32Check(digits);
+  return `${code.slice(0, 4)}-${code.slice(4, 8)}-${code.slice(8)}`;
+};
+
+// Altes 16-stelliges Format (Einlese-Logik unverändert übernommen)
 const CODE_LETTERS = 'BCDEFGHJKLMNPQRSTUVWXYZ';
 
 const codeChecksum = (scoreChars) => {
@@ -2002,18 +2302,7 @@ const codeChecksum = (scoreChars) => {
   return CODE_LETTERS[sum % CODE_LETTERS.length];
 };
 
-const generateCode = (gameProgress) => {
-  let scoreChars = '';
-  for (const g of gameOrder) {
-    const score = Math.min(10, Math.max(0, gameProgress[g]?.score || 0));
-    scoreChars += score === 10 ? 'A' : score.toString();
-  }
-  let code = scoreChars + codeChecksum(scoreChars);
-  while (code.length < 16) code += CODE_LETTERS[Math.floor(Math.random() * CODE_LETTERS.length)];
-  return code.match(/.{1,4}/g).join('-');
-};
-
-const parseCode = (input) => {
+const parseLegacyCode = (input) => {
   const clean = input.toUpperCase().replace(/O/g, '0').replace(/I/g, '1').replace(/[^0-9A-Z]/g, '');
   if (clean.length !== 16) return null;
   const scoreChars = clean.slice(0, gameOrder.length);
@@ -2028,17 +2317,57 @@ const parseCode = (input) => {
   return { progress, total };
 };
 
-function SaveLoadModal({ onClose, gameProgress, setGameProgress }) {
+const parseCode = (input) => {
+  const clean = input.toUpperCase().replace(/O/g, '0').replace(/[IL]/g, '1').replace(/[^0-9A-Z]/g, '');
+  if (clean.length === 16) {
+    const legacy = parseLegacyCode(clean);
+    if (!legacy) return null;
+    const skills = {};
+    SKILLS.forEach(s => { skills[s.id] = 0; });
+    return { ...legacy, skills };
+  }
+  if (clean.length !== 13) return null;
+  if ([...clean].some(ch => !CODE32.includes(ch))) return null;
+  const digits = [...clean.slice(0, 12)].map(ch => CODE32.indexOf(ch));
+  if (clean[12] !== code32Check(digits)) return null;
+  let n = digits.reduce((acc, v) => acc * 32n + BigInt(v), 0n);
+  if (n >= CODE_MAX) return null;
+  const skills = {};
+  [...SKILLS].reverse().forEach(s => { skills[s.id] = Number(n % 4n); n /= 4n; });
+  const progress = {};
+  let total = 0;
+  [...gameOrder].reverse().forEach(g => {
+    const val = Number(n % 11n);
+    n /= 11n;
+    if (val > 0) { progress[g] = { status: 'completed', score: val, max: 10 }; total += val; }
+  });
+  return { progress, total, skills };
+};
+
+// Bindestriche beim Tippen automatisch im Format 4-4-5 setzen
+const formatCodeInput = (value) => {
+  const raw = value.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 16);
+  if (raw.length <= 4) return raw;
+  if (raw.length <= 8) return `${raw.slice(0, 4)}-${raw.slice(4)}`;
+  return `${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8)}`;
+};
+
+function SaveLoadModal({ onClose, gameProgress, setGameProgress, skillLog, setSkillLog }) {
   const [inputCode, setInputCode] = useState("");
   const [error, setError] = useState(false);
   const [success, setSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [currentCode] = useState(() => generateCode(gameProgress));
+  const [currentCode] = useState(() => {
+    const levels = {};
+    SKILLS.forEach(s => { levels[s.id] = skillLevel(skillLog[s.id]); });
+    return generateCode(gameProgress, levels);
+  });
 
   const handleLoad = () => {
     const result = parseCode(inputCode);
     if (!result) { setError(true); setTimeout(() => setError(false), 1500); return; }
     setGameProgress(result.progress);
+    setSkillLog(skillLogFromLevels(result.skills));
     setSuccess(true);
     setTimeout(() => onClose(), 1500);
   };
@@ -2056,7 +2385,7 @@ function SaveLoadModal({ onClose, gameProgress, setGameProgress }) {
         <div className="flex flex-col items-center mb-6">
           <div className="bg-yellow-900/40 p-4 rounded-full mb-4 border border-yellow-400/30"><Key className="w-8 h-8 text-yellow-300" /></div>
           <h3 className="text-2xl font-black text-white text-center">Dein Helden-Code</h3>
-          <p className="text-slate-400 text-center text-sm mt-2">Schreibe dir diesen Code auf, um später genau hier weiterzuspielen!</p>
+          <p className="text-slate-400 text-center text-sm mt-2">Schreibe dir diesen Code auf. Darin stecken deine Sterne und dein Können!</p>
         </div>
 
         <div className="bg-slate-950 p-4 rounded-xl border-2 border-yellow-400/50 flex justify-between items-center gap-2 mb-8 shadow-inner">
@@ -2072,9 +2401,13 @@ function SaveLoadModal({ onClose, gameProgress, setGameProgress }) {
             <input
               type="text"
               value={inputCode}
-              onChange={(e) => setInputCode(e.target.value.toUpperCase())}
+              maxLength={19}
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck="false"
+              onChange={(e) => setInputCode(formatCodeInput(e.target.value))}
               onKeyDown={(e) => e.key === 'Enter' && handleLoad()}
-              placeholder="XXXX-XXXX-XXXX-XXXX"
+              placeholder="XXXX-XXXX-XXXXX"
               className={`w-full bg-slate-950 border-2 rounded-xl p-4 text-white text-center font-mono text-xl focus:outline-none transition-colors ${error ? 'border-red-500 anim-shake' : success ? 'border-lime-500 text-lime-300' : 'border-slate-700 focus:border-yellow-400'}`}
             />
             {error && <p className="text-red-400 text-center text-sm font-bold">Dieser Code stimmt nicht. Prüfe jedes Zeichen!</p>}
@@ -2118,7 +2451,7 @@ function AdminAuthModal({ onLogin, onClose }) {
   );
 }
 
-function AdminControlModal({ onClose, gameProgress, setGameProgress }) {
+function AdminControlModal({ onClose, gameProgress, setGameProgress, setSkillLog }) {
   return (
     <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[200] flex items-center justify-center p-4">
       <div className="bg-slate-900 border-4 border-slate-600 p-8 rounded-3xl max-w-sm w-full text-center anim-pop relative">
@@ -2134,7 +2467,7 @@ function AdminControlModal({ onClose, gameProgress, setGameProgress }) {
           BASICS.forEach(g => { updates[g] = { status: 'completed', score: 10, max: 10 }; });
           setGameProgress(updates); onClose();
         }} className="bg-teal-600 hover:bg-teal-500 text-white p-4 rounded-xl mb-4 w-full font-bold">Grundlagen abschließen</button>
-        <button onClick={() => { setGameProgress({}); onClose(); }} className="bg-red-600 hover:bg-red-500 text-white p-4 rounded-xl w-full font-bold">Fortschritt löschen</button>
+        <button onClick={() => { setGameProgress({}); setSkillLog({}); onClose(); }} className="bg-red-600 hover:bg-red-500 text-white p-4 rounded-xl w-full font-bold">Fortschritt löschen</button>
       </div>
     </div>
   );
@@ -2162,6 +2495,20 @@ export default function App() {
   const globalScore = sumCoreScores(gameProgress);
   const profiScore = gameProgress.profi?.score || 0;
   const [hudAnim, setHudAnim] = useState(false);
+
+  // „Das kann ich schon“: pro Baustein window = letzte bis zu 10 Ergebnisse (true/false, inkl. Startwerte aus dem Code),
+  // ok/total = echte Zählung in dieser Sitzung
+  const [skillLog, setSkillLog] = useState({}); // { [skillId]: { window: [bool], ok: n, total: n } }
+  const [skillModal, setSkillModal] = useState(null); // null oder { focus: gameId | null }
+
+  const track = useCallback((skillId, correct) => {
+    if (!skillId) return;
+    setSkillLog(prev => {
+      const e = prev[skillId] || { window: [], ok: 0, total: 0 };
+      return { ...prev, [skillId]: { window: [...e.window, !!correct].slice(-10), ok: e.ok + (correct ? 1 : 0), total: e.total + 1 } };
+    });
+  }, []);
+  const skillContext = useMemo(() => ({ track }), [track]);
 
   const getLockState = (gameMode) => {
     const req = UNLOCK_REQ[gameMode];
@@ -2221,10 +2568,11 @@ export default function App() {
 
       {showRulesModal && <RulesModal onClose={() => setShowRulesModal(false)} />}
       {showHelpModal && <HelpModal onClose={() => setShowHelpModal(false)} />}
-      {showSaveModal && <SaveLoadModal onClose={() => setShowSaveModal(false)} gameProgress={gameProgress} setGameProgress={setGameProgress} />}
+      {showSaveModal && <SaveLoadModal onClose={() => setShowSaveModal(false)} gameProgress={gameProgress} setGameProgress={setGameProgress} skillLog={skillLog} setSkillLog={setSkillLog} />}
+      {skillModal && <SkillModal onClose={() => setSkillModal(null)} skillLog={skillLog} focusGame={skillModal.focus} getLockState={getLockState} gameProgress={gameProgress} onStartGame={(id) => { setSkillModal(null); startGame(id); }} />}
       {showTreasureModal && <TreasureModal onClose={() => setShowTreasureModal(false)} gameProgress={gameProgress} />}
       {showAdminAuth && <AdminAuthModal onClose={() => setShowAdminAuth(false)} onLogin={() => { setShowAdminAuth(false); setShowAdminControl(true); }} />}
-      {showAdminControl && <AdminControlModal onClose={() => setShowAdminControl(false)} gameProgress={gameProgress} setGameProgress={setGameProgress} />}
+      {showAdminControl && <AdminControlModal onClose={() => setShowAdminControl(false)} gameProgress={gameProgress} setGameProgress={setGameProgress} setSkillLog={setSkillLog} />}
 
       {/* HEADER */}
       <div className="fixed top-2 md:top-4 left-2 right-2 md:left-4 md:right-4 z-[100] flex justify-between items-start pointer-events-none gap-1 md:gap-2">
@@ -2235,6 +2583,7 @@ export default function App() {
           <button onClick={() => setShowTreasureModal(true)} className="flex items-center gap-1 md:gap-2 bg-slate-900/90 text-yellow-300 font-bold py-2 px-3 md:px-4 rounded-full border-2 border-yellow-400/50 shadow-[0_0_15px_rgba(250,204,21,0.3)] hover:scale-105 transition-transform whitespace-nowrap"><Trophy className="w-5 h-5" /><span className="hidden lg:inline uppercase text-sm md:text-base">Abzeichen</span></button>
           <button onClick={() => setShowHelpModal(true)} className="flex items-center gap-1 md:gap-2 bg-slate-900/90 text-cyan-300 font-bold py-2 px-3 md:px-4 rounded-full border-2 border-cyan-500/50 shadow-md whitespace-nowrap"><HelpCircle className="w-5 h-5" /><span className="hidden md:inline uppercase text-sm md:text-base">Hilfe</span></button>
           <button onClick={() => setShowSaveModal(true)} className="flex items-center gap-1 md:gap-2 bg-slate-900/90 text-pink-300 font-bold py-2 px-3 md:px-4 rounded-full border-2 border-pink-500/50 shadow-md whitespace-nowrap"><Key className="w-5 h-5" /><span className="hidden md:inline uppercase text-sm md:text-base">Code</span></button>
+          <button onClick={() => setSkillModal({ focus: null })} className="flex items-center gap-1 md:gap-2 bg-slate-900/90 text-lime-300 font-bold py-2 px-3 md:px-4 rounded-full border-2 border-lime-500/50 shadow-md whitespace-nowrap"><Target className="w-5 h-5" /><span className="hidden lg:inline uppercase text-sm md:text-base">Das kann ich schon:</span></button>
           <button onClick={() => setShowAdminAuth(true)} className="opacity-30 hover:opacity-100 p-2 md:ml-1 transition-opacity"><Settings className="w-5 h-5 text-slate-400" /></button>
         </div>
         <div className="flex justify-end pointer-events-auto">
@@ -2322,6 +2671,7 @@ export default function App() {
               </div>
             )}
             <div className="flex flex-col gap-4">
+              <button onClick={() => setSkillModal({ focus: activeGame })} className="flex items-center justify-center gap-3 bg-slate-800 hover:bg-slate-700 border-2 border-lime-500/60 text-lime-300 font-black text-lg py-4 rounded-2xl active:scale-95"><Target className="w-6 h-6" /> Das kann ich schon:</button>
               <button onClick={replay} className="flex items-center justify-center gap-3 bg-pink-600 hover:bg-pink-500 text-white font-black text-xl py-4 rounded-2xl active:scale-95"><RotateCcw className="w-6 h-6" /> Nochmal spielen</button>
               <button onClick={() => setGameState('menu')} className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-lg py-4 rounded-2xl active:scale-95">Zurück zu Comic-Stadt</button>
             </div>
@@ -2339,12 +2689,15 @@ export default function App() {
                 <button onClick={() => setGameState('menu')} className="font-bold flex items-center gap-2 bg-slate-800/60 hover:bg-slate-700 px-4 py-2 rounded-xl active:scale-95"><ArrowRight className="w-4 h-4 rotate-180" /> <span className="hidden sm:inline">Zurück</span></button>
               </div>
               <div className="font-black tracking-widest uppercase text-xs md:text-base text-center opacity-80">{gameById(activeGame).title}</div>
-              <div className="flex justify-end">
-                {gameProgress[activeGame]?.score > 0 && <span className="text-yellow-300 font-bold text-sm flex items-center gap-1"><Star className="w-4 h-4 fill-yellow-300" /> Rekord: {gameProgress[activeGame].score}</span>}
+              <div className="flex justify-end items-center gap-2 md:gap-3">
+                {gameProgress[activeGame]?.score > 0 && <span className="text-yellow-300 font-bold text-sm flex items-center gap-1"><Star className="w-4 h-4 fill-yellow-300" /> <span className="hidden sm:inline">Rekord:</span> {gameProgress[activeGame].score}</span>}
+                <button onClick={() => setSkillModal({ focus: activeGame })} title="Das kann ich schon:" className="flex items-center gap-1 bg-slate-800/60 hover:bg-slate-700 text-lime-300 font-bold px-3 py-2 rounded-xl border border-lime-500/40 active:scale-95"><Target className="w-5 h-5" /><span className="hidden md:inline text-sm">Das kann ich schon:</span></button>
               </div>
             </div>
             <div className="bg-black/20 backdrop-blur-sm w-full rounded-[3rem] shadow-2xl border-2 border-white/10 p-5 md:p-10 min-h-[400px]">
-              <ActiveComp key={runId} onFinish={handleFinish} onShowTip={setTipMessage} />
+              <SkillContext.Provider value={skillContext}>
+                <ActiveComp key={runId} onFinish={handleFinish} onShowTip={setTipMessage} />
+              </SkillContext.Provider>
             </div>
           </div>
         </div>
