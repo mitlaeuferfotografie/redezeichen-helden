@@ -194,7 +194,7 @@ const redeverbData = [
 
 const memoryPairs = [
   { id: 1, sit: "ganz leise sprechen", emo: "🤫", verb: "flüstern" },
-  { id: 2, sit: "sehr laut und wütend rufen", emo: "📢", verb: "brüllen" },
+  { id: 2, sit: "so laut wie ein Löwe rufen", emo: "🦁", verb: "brüllen" },
   { id: 3, sit: "etwas wissen wollen", emo: "❓", verb: "fragen" },
   { id: 4, sit: "auf eine Frage reagieren", emo: "💡", verb: "antworten" },
   { id: 5, sit: "undeutlich vor sich hin reden", emo: "😶", verb: "murmeln" },
@@ -204,7 +204,7 @@ const memoryPairs = [
   { id: 9, sit: "leise und albern lachen", emo: "🤭", verb: "kichern" },
   { id: 10, sit: "traurig klagen", emo: "😢", verb: "jammern" },
   { id: 11, sit: "zeigen, wie etwas geht", emo: "🧑‍🏫", verb: "erklären" },
-  { id: 12, sit: "höflich um etwas fragen", emo: "🙏", verb: "bitten" }
+  { id: 12, sit: "höflich sagen, was man gern hätte", emo: "🙏", verb: "bitten" }
 ];
 
 const regenWords = [
@@ -394,16 +394,27 @@ const MODE_EXPLAIN = {
 };
 
 // Antwort vergleichen: „ = Anfang, “ = Ende, gerade " werden abwechselnd gedeutet. Leerzeichen um Zeichen sind egal.
+// Tastatur-Ersatz wird akzeptiert: ,, für „ und '' für “. Umlaute werden vereinheitlicht (NFC).
 function normalizeAnswer(s) {
   let out = '';
   let q = 0;
-  for (const ch of s.trim()) {
+  const text = s.normalize('NFC').trim().replace(/,,/g, '„').replace(/''/g, '“');
+  for (const ch of text) {
     if (ch === '„' || ch === '‚' || ch === '«') { out += '<'; q++; }
     else if (ch === '“' || ch === '”' || ch === '»' || ch === '‘' || ch === '’') { out += '>'; q++; }
     else if (ch === '"' || ch === "'") { out += q % 2 === 0 ? '<' : '>'; q++; }
     else out += ch;
   }
   return out.replace(/\s+/g, ' ').replace(/\s*([<>:,.?!])\s*/g, '$1');
+}
+
+// Ist die Antwort richtig? Wie in den Kästchen-Spielen gilt: Steht der Begleitsatz vorne,
+// passen am Ende der Rede Punkt und Ausrufezeichen beide (Fragezeichen bleibt Fragezeichen).
+function answerMatches(user, solution, mode) {
+  const u = normalizeAnswer(user), s = normalizeAnswer(solution);
+  if (u === s) return true;
+  if (mode === 'vorne' && /[.!]>$/.test(s) && /[.!]>$/.test(u)) return u.slice(0, -2) === s.slice(0, -2);
+  return false;
 }
 
 function diagnoseAnswer(user, solution, mode) {
@@ -1124,7 +1135,8 @@ function MarkerRound({ item, fb, onNext }) {
   useEffect(() => {
     const stop = () => { painting.current = false; };
     window.addEventListener('pointerup', stop);
-    return () => window.removeEventListener('pointerup', stop);
+    window.addEventListener('pointercancel', stop);
+    return () => { window.removeEventListener('pointerup', stop); window.removeEventListener('pointercancel', stop); };
   }, []);
 
   const paint = (i, toggle = false) => {
@@ -1136,9 +1148,14 @@ function MarkerRound({ item, fb, onNext }) {
     });
   };
 
+  // Zuletzt bemaltes Wort: Beim Wischen wird nur ein NEUES Wort bemalt. So lässt sich eine
+  // Markierung durch Antippen wieder entfernen, auch wenn der Finger dabei minimal wackelt.
+  const lastWord = useRef(null);
+
   const handleDown = (e, i) => {
     if (e.target.releasePointerCapture) { try { e.target.releasePointerCapture(e.pointerId); } catch (err) { /* egal */ } }
     painting.current = true;
+    lastWord.current = i;
     paint(i, true);
   };
 
@@ -1148,6 +1165,8 @@ function MarkerRound({ item, fb, onNext }) {
     const w = el && el.closest('[data-w]');
     if (w) {
       const i = parseInt(w.getAttribute('data-w'), 10);
+      if (i === lastWord.current) return;
+      lastWord.current = i;
       if (marks[i] !== active) paint(i);
     }
   };
@@ -1215,6 +1234,9 @@ function SortGame({ onFinish, onShowTip }) {
   const fb = useGameFeedback(onShowTip);
   const track = useTrack();
   const item = items[idx];
+  // Timer beim Verlassen des Spiels stoppen (sonst springt die App nach „Zurück“ noch zum Ergebnis)
+  const timerRef = useRef(null);
+  useEffect(() => () => clearTimeout(timerRef.current), []);
 
   const handleSort = (mode) => {
     if (solved || wrongGuesses.includes(mode)) return;
@@ -1224,7 +1246,7 @@ function SortGame({ onFinish, onShowTip }) {
       const s = score + (wrongGuesses.length === 0 ? 1 : 0);
       setScore(s);
       setSolved(true);
-      setTimeout(() => {
+      timerRef.current = setTimeout(() => {
         if (idx + 1 < items.length) { setIdx(idx + 1); setSolved(false); setWrongGuesses([]); fb.clear(); }
         else onFinish(s, 10);
       }, 1600);
@@ -1550,8 +1572,13 @@ function BuildRound({ target, extra, mode, header, tip, explain, fb, onNext, col
     setWrong(false);
   };
 
+  // Am Ende einer Rede mit Begleitsatz vorne passen Punkt und Ausrufezeichen beide (wie in den Kästchen-Spielen)
+  const endOfRedeVorne = (i) => ['.', '!'].includes(target[i].t) && target[i].k === 'e' && target[i + 1]?.t === '“' && target[i + 2]?.t !== ',';
+
   const check = () => {
-    const ok = answer.length === target.length && answer.every((tok, i) => tok.t === target[i].t);
+    const ok = answer.length === target.length && answer.every((tok, i) =>
+      tok.t === target[i].t || (endOfRedeVorne(i) && ['.', '!'].includes(tok.t))
+    );
     // Erster Prüf-Klick zählt – auch bei falscher Bausteinzahl, solange alle Wörter drin sind
     if (!tracked.current) {
       tracked.current = true;
@@ -1607,6 +1634,9 @@ function MemoryGame({ onFinish, onShowTip }) {
   const [justMatched, setJustMatched] = useState(null);
   const [done, setDone] = useState(false);
   const fb = useGameFeedback(onShowTip);
+  // Karten, die schon einmal aufgedeckt waren. Ein Fehlversuch ist nur dann „vermeidbar“,
+  // wenn die passende Karte schon zu sehen war – nur dann zählt er für den Tipp.
+  const seen = useRef(new Set());
 
   const flip = (i) => {
     if (busy || done || open.includes(i) || matched.includes(cards[i].pair)) return;
@@ -1614,6 +1644,9 @@ function MemoryGame({ onFinish, onShowTip }) {
     setOpen(nextOpen);
     if (nextOpen.length === 2) {
       const [a, b] = nextOpen;
+      const partnerOfA = cards.findIndex((c, k) => k !== a && c.pair === cards[a].pair);
+      const avoidable = seen.current.has(partnerOfA);
+      seen.current.add(a); seen.current.add(b);
       setBusy(true);
       if (cards[a].pair === cards[b].pair) {
         fb.good(null, 1500);
@@ -1626,7 +1659,8 @@ function MemoryGame({ onFinish, onShowTip }) {
         }, 900);
       } else {
         setMisses(m => m + 1);
-        fb.bad("Lies die Beschreibung genau: Wie spricht die Person? Leise, laut, fröhlich, wütend? Dazu passt ein ganz bestimmtes Verb!", "Kein Paar – merk dir die Karten! 🧠");
+        if (avoidable) fb.bad("Die passende Karte hast du schon gesehen! Lies die Beschreibung genau: Wie spricht die Person? Leise, laut, fröhlich, wütend? Dazu passt ein ganz bestimmtes Verb.", "Kein Paar – die passende Karte hattest du schon gesehen! 🧠");
+        else fb.info("Kein Paar – merk dir die Karten! 🧠");
         setTimeout(() => { setOpen([]); setBusy(false); }, 1400);
       }
     }
@@ -1954,10 +1988,10 @@ function SchreibRound({ item, fb, onNext }) {
   const inputRef = useRef(null);
   const track = useTrack();
 
-  // Gerade Anführungszeichen automatisch in „ und “ verwandeln
+  // Gerade Anführungszeichen (auch ” und Tastatur-Ersatz ,, bzw. '') automatisch in „ und “ verwandeln
   const smartQuotes = (value) => {
     let out = '';
-    for (const ch of value) {
+    for (const ch of value.replace(/,,/g, '„').replace(/''/g, '“').replace(/”/g, '"')) {
       if (ch === '"') {
         const prev = out.slice(-1);
         out += (!prev || /[\s:(]/.test(prev)) ? '„' : '“';
@@ -1985,7 +2019,7 @@ function SchreibRound({ item, fb, onNext }) {
       const r = diagnoseSkills(text, item.solution, item.mode);
       if (r) Object.entries(r).forEach(([skill, val]) => track(skill, val));
     }
-    if (normalizeAnswer(text) === normalizeAnswer(item.solution)) {
+    if (answerMatches(text, item.solution, item.mode)) {
       fb.good();
       setSolved(true);
     } else {
